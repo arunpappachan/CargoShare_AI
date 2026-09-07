@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Anchor, MapPin, Calendar, Package, PlusCircle, CheckCircle } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 export default function PostSpace() {
+  const { user } = useAuth();
   const [posted, setPosted] = useState(false);
   const [origin, setOrigin] = useState('');
   const [destination, setDestination] = useState('');
@@ -13,26 +15,56 @@ export default function PostSpace() {
   const [price, setPrice] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Dynamically clear error when user types
+  useEffect(() => {
+    if (error) setError('');
+  }, [vessel, origin, destination, date, capacity, price]);
+
   const handlePost = async (e) => {
     e.preventDefault();
+    
+    // Comprehensive Validations
+    if (vessel.trim().length < 3) {
+      setError('Vessel name must be at least 3 characters long.');
+      return;
+    }
     if (origin === destination) {
       setError('Origin and Destination ports cannot be the same.');
       return;
     }
+    const selectedDate = new Date(date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (selectedDate < today) {
+      setError('Departure date cannot be in the past.');
+      return;
+    }
+    if (Number(capacity) <= 0) {
+      setError('Capacity must be greater than 0.');
+      return;
+    }
+    if (Number(price) <= 0) {
+      setError('Price must be greater than 0.');
+      return;
+    }
+
     setError('');
     setLoading(true);
 
     try {
+      const carrierName = user?.companyName || 'Oceanic Freight Ltd.';
+
       const res = await fetch('http://localhost:5000/api/spaces', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          vessel,
+          vessel: vessel.trim(),
           origin,
           dest: destination,
           date,
-          capacity,
-          price
+          capacity: Number(capacity),
+          price: Number(price),
+          carrier: carrierName
         })
       });
 
@@ -55,6 +87,7 @@ export default function PostSpace() {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="space-y-8">

@@ -34,8 +34,8 @@ let fallbackSpaces = [
     id: 'SP-5001',
     vessel: 'MSC Oscar',
     carrier: 'Oceanic Freight Ltd.',
-    origin: 'Shanghai',
-    dest: 'Rotterdam',
+    origin: 'innsa',
+    dest: 'inmun',
     date: '2026-09-01',
     capacity: 250,
     available: 180,
@@ -47,8 +47,8 @@ let fallbackSpaces = [
     id: 'SP-5002',
     vessel: 'Ever Given',
     carrier: 'Maersk Logistics',
-    origin: 'Singapore',
-    dest: 'Hamburg',
+    origin: 'inmaa',
+    dest: 'inccu',
     date: '2026-09-05',
     capacity: 400,
     available: 320,
@@ -62,7 +62,7 @@ let fallbackBookings = [
   {
     id: 'CS-1001',
     spaceId: 'SP-5001',
-    route: 'Shanghai to Rotterdam',
+    route: 'innsa to inmun',
     carrier: 'Oceanic Freight Ltd.',
     exporterName: 'Apex Textiles SME',
     cbm: 25,
@@ -363,7 +363,31 @@ const startServer = async () => {
     connectPostgres().catch(() => {});
   }
 
-  const server = app.listen(PORT, () => {
+  const server = require('http').createServer(app);
+  const { Server } = require('socket.io');
+  const io = new Server(server, {
+    cors: { origin: "*", methods: ["GET", "POST"] }
+  });
+
+  io.on('connection', (socket) => {
+    console.log(`[Socket.io] User connected: ${socket.id}`);
+
+    socket.on('join_booking', (bookingId) => {
+      socket.join(bookingId);
+      console.log(`[Socket.io] User ${socket.id} joined booking room: ${bookingId}`);
+    });
+
+    socket.on('send_message', (data) => {
+      // Broadcast to everyone in the room
+      io.to(data.bookingId).emit('receive_message', data);
+    });
+
+    socket.on('disconnect', () => {
+      console.log(`[Socket.io] User disconnected: ${socket.id}`);
+    });
+  });
+
+  server.listen(PORT, () => {
     console.log(`CargoShare AI Backend running on http://localhost:${PORT}`);
     console.log(`API Health Check: http://localhost:${PORT}/api/health`);
     console.log('--------------------------------------------------');

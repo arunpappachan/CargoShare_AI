@@ -38,6 +38,17 @@ export default function Profile() {
     e.preventDefault();
     setSaving(true);
     setAlert({ type: '', message: '' });
+
+    if (!/^\d{10}$/.test(formData.phone)) {
+      setAlert({ type: 'error', message: 'Phone number must be exactly 10 digits and only contain numbers.' });
+      setSaving(false);
+      return;
+    }
+    if (formData.phone === '0000000000') {
+      setAlert({ type: 'error', message: 'Phone number cannot be all zeros.' });
+      setSaving(false);
+      return;
+    }
     try {
       await updateProfile(formData);
       setIsEditing(false);

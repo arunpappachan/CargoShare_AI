@@ -23,10 +23,7 @@ router.post('/register', async (req, res) => {
     const validRoles = ['exporter', 'carrier'];
     const assignedRole = validRoles.includes(role) ? role : 'exporter';
 
-    const existingUser = await User.findOne({ email: email.toLowerCase().trim(), role: assignedRole });
-    if (existingUser) {
-      return res.status(400).json({ status: 'error', message: `An account with this email already exists for the ${assignedRole} role.` });
-    }
+    // Removed unique constraint check to allow the same email for multiple accounts
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new User({

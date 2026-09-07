@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Ship, Mail, Lock, Briefcase, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { Ship, Mail, Lock, Briefcase, Eye, EyeOff, AlertCircle, Shield } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
@@ -102,11 +102,23 @@ export default function Login() {
 
           <form className="space-y-5" onSubmit={handleSubmit}>
             {/* Role Selection (Visual selector) */}
-            <div className="grid grid-cols-2 gap-4 mb-2">
+            <div className="grid grid-cols-3 gap-4 mb-2">
+              <button 
+                type="button"
+                onClick={() => setRole('admin')}
+                className={`py-3 px-2 rounded-xl border flex flex-col items-center gap-2 transition-all ${
+                  role === 'admin' 
+                    ? 'border-brand-500 bg-brand-50 text-brand-700 ring-1 ring-brand-500 shadow-sm' 
+                    : 'border-slate-200 hover:border-slate-300 text-slate-600'
+                }`}
+              >
+                <Shield className="w-6 h-6" />
+                <span className="text-sm font-semibold">Admin</span>
+              </button>
               <button 
                 type="button"
                 onClick={() => setRole('exporter')}
-                className={`py-3 px-4 rounded-xl border flex flex-col items-center gap-2 transition-all ${
+                className={`py-3 px-2 rounded-xl border flex flex-col items-center gap-2 transition-all ${
                   role === 'exporter' 
                     ? 'border-brand-500 bg-brand-50 text-brand-700 ring-1 ring-brand-500 shadow-sm' 
                     : 'border-slate-200 hover:border-slate-300 text-slate-600'
@@ -118,7 +130,7 @@ export default function Login() {
               <button 
                 type="button"
                 onClick={() => setRole('carrier')}
-                className={`py-3 px-4 rounded-xl border flex flex-col items-center gap-2 transition-all ${
+                className={`py-3 px-2 rounded-xl border flex flex-col items-center gap-2 transition-all ${
                   role === 'carrier' 
                     ? 'border-brand-500 bg-brand-50 text-brand-700 ring-1 ring-brand-500 shadow-sm' 
                     : 'border-slate-200 hover:border-slate-300 text-slate-600'

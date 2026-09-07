@@ -32,6 +32,15 @@ export default function Register() {
       return;
     }
 
+    if (!/^\d{10}$/.test(formData.phone)) {
+      setErrorMsg('Phone number must be exactly 10 digits and only contain numbers.');
+      return;
+    }
+    if (formData.phone === '0000000000') {
+      setErrorMsg('Phone number cannot be all zeros.');
+      return;
+    }
+
     setLoading(true);
     setErrorMsg('');
 
@@ -153,7 +162,7 @@ export default function Register() {
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    placeholder="+91 98765 43210"
+                    placeholder="9876543210"
                     className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 outline-none transition-all bg-slate-50 focus:bg-white text-sm" 
                     required 
                   />
