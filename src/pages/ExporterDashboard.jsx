@@ -101,7 +101,7 @@ export default function ExporterDashboard() {
               <div>
                 <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Estimated Savings</p>
                 <div className="text-2xl font-extrabold text-emerald-600 mt-0.5">
-                  <CountUp prefix="$" end={3420} duration={2000} />
+                  <CountUp prefix="₹" end={3420} duration={2000} />
                 </div>
                 <p className="text-[11px] text-emerald-600 font-bold mt-0.5">-34% vs FCL charter</p>
               </div>

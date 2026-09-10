@@ -103,7 +103,7 @@ export default function SidebarNav({
               {Icon && (
                 <Icon
                   className={`w-5 h-5 transition-transform duration-200 ${
-                    isActive ? 'scale-110 text-white' : 'text-slate-400 group-hover:text-white'
+                    isActive ? 'scale-110 text-white' : 'text-slate-400'
                   }`}
                 />
               )}

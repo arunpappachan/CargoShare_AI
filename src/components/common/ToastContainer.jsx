@@ -37,7 +37,7 @@ export default function ToastContainer() {
   return (
     <div
       aria-live="polite"
-      className="fixed top-5 right-5 z-50 flex flex-col gap-3 max-w-sm w-full pointer-events-none px-4 sm:px-0"
+      className="fixed top-20 right-5 z-[100] flex flex-col gap-3 max-w-sm w-full pointer-events-none px-4 sm:px-0"
     >
       {toasts.map((t) => {
         const theme = TOAST_THEMES[t.type] || TOAST_THEMES.info;

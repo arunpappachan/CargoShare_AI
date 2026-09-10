@@ -3,7 +3,7 @@ import { Plus, Edit2, Trash2, X, Check, BarChart2 } from 'lucide-react';
 
 export default function ReportsManager() {
   const [reports, setReports] = useState([
-    { id: 'REP-001', title: 'Q3 Financial Overview', type: 'Financial', author: 'admin', date: '2023-10-01', metric: '$145,000 Revenue' },
+    { id: 'REP-001', title: 'Q3 Financial Overview', type: 'Financial', author: 'admin', date: '2023-10-01', metric: '₹145,000 Revenue' },
     { id: 'REP-002', title: 'September User Growth', type: 'Growth', author: 'admin', date: '2023-10-05', metric: '+12% Active Users' },
   ]);
 
@@ -80,7 +80,7 @@ export default function ReportsManager() {
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Key Metric / Highlight</label>
-              <input required type="text" placeholder="e.g. +12% Users, $45k Revenue" value={formData.metric} onChange={e => setFormData({...formData, metric: e.target.value})} className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none focus:border-indigo-500" />
+              <input required type="text" placeholder="e.g. +12% Users, ₹45k Revenue" value={formData.metric} onChange={e => setFormData({...formData, metric: e.target.value})} className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none focus:border-indigo-500" />
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Date</label>

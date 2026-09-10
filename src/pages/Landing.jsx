@@ -5,6 +5,7 @@ import OrbitHub from '../components/OrbitHub';
 import StatsSection from '../components/StatsSection';
 import TestimonialsSection from '../components/TestimonialsSection';
 import ProductPreview from '../components/ProductPreview';
+import SavingsCalculator from '../components/SavingsCalculator';
 import ClosingCTA from '../components/ClosingCTA';
 import RevealSection from '../components/common/RevealSection';
 import TiltCard from '../components/common/TiltCard';
@@ -168,6 +169,9 @@ export default function Landing() {
         </div>
       </RevealSection>
 
+      {/* Interactive Savings Calculator */}
+      <SavingsCalculator />
+
       {/* Product Live Platform Preview */}
       <ProductPreview />
 
@@ -193,46 +197,35 @@ export default function Landing() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
-            <div className="space-y-4 relative p-6 rounded-3xl bg-brand-800/40 border border-brand-700/50 backdrop-blur-sm">
-              <div className="w-16 h-16 mx-auto bg-brand-800 rounded-2xl flex items-center justify-center border-4 border-brand-700 z-10 relative text-brand-300 shadow-md">
-                <Search className="w-7 h-7" />
-              </div>
-              <h4 className="text-lg font-bold text-white">1. Search Space</h4>
-              <p className="text-sm text-brand-200/90 leading-relaxed">
-                Specify cargo volume (CBM), commodity type, port pairs, and target readiness date.
-              </p>
-            </div>
-            
-            <div className="space-y-4 relative p-6 rounded-3xl bg-brand-800/40 border border-brand-700/50 backdrop-blur-sm">
-              <div className="w-16 h-16 mx-auto bg-brand-800 rounded-2xl flex items-center justify-center border-4 border-brand-700 z-10 relative text-brand-300 shadow-md">
-                <Cpu className="w-7 h-7" />
-              </div>
-              <h4 className="text-lg font-bold text-white">2. AI Optimization</h4>
-              <p className="text-sm text-brand-200/90 leading-relaxed">
-                Our engine aggregates compatible LCL shipments to book high-priority container bays.
-              </p>
-            </div>
-            
-            <div className="space-y-4 relative p-6 rounded-3xl bg-brand-800/40 border border-brand-700/50 backdrop-blur-sm">
-              <div className="w-16 h-16 mx-auto bg-brand-800 rounded-2xl flex items-center justify-center border-4 border-brand-700 z-10 relative text-brand-300 shadow-md">
-                <CreditCard className="w-7 h-7" />
-              </div>
-              <h4 className="text-lg font-bold text-white">3. Book & Escrow</h4>
-              <p className="text-sm text-brand-200/90 leading-relaxed">
-                Lock in guaranteed slots with transparent pricing and milestone-protected escrow.
-              </p>
-            </div>
-            
-            <div className="space-y-4 relative p-6 rounded-3xl bg-brand-800/40 border border-brand-700/50 backdrop-blur-sm">
-              <div className="w-16 h-16 mx-auto bg-brand-800 rounded-2xl flex items-center justify-center border-4 border-brand-700 z-10 relative text-brand-300 shadow-md">
-                <Map className="w-7 h-7" />
-              </div>
-              <h4 className="text-lg font-bold text-white">4. Track & Clear</h4>
-              <p className="text-sm text-brand-200/90 leading-relaxed">
-                Live GPS vessel position, dynamic ETAs, and digitized customs documentation.
-              </p>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center relative">
+            {/* Desktop connector line between steps */}
+            <div className="hidden md:block absolute top-[3.5rem] left-[12.5%] right-[12.5%] h-px border-t-2 border-dashed border-brand-500/30 pointer-events-none z-0" />
+
+            {[
+              { step: 1, icon: Search, title: 'Search Space', desc: 'Specify cargo volume (CBM), commodity type, port pairs, and target readiness date.', color: 'from-brand-500 to-cyan-400' },
+              { step: 2, icon: Cpu, title: 'AI Optimization', desc: 'Our engine aggregates compatible LCL shipments to book high-priority container bays.', color: 'from-blue-500 to-indigo-400' },
+              { step: 3, icon: CreditCard, title: 'Book & Escrow', desc: 'Lock in guaranteed slots with transparent pricing and milestone-protected escrow.', color: 'from-violet-500 to-purple-400' },
+              { step: 4, icon: Map, title: 'Track & Clear', desc: 'Live GPS vessel position, dynamic ETAs, and digitized customs documentation.', color: 'from-emerald-500 to-teal-400' },
+            ].map((item) => {
+              const Icon = item.icon;
+              return (
+                <div key={item.step} className="relative z-10 space-y-4 p-6 rounded-3xl bg-brand-800 border border-brand-700/60 hover:border-brand-500/60 hover:shadow-xl hover:shadow-brand-500/10 transition-all duration-300 group">
+                  {/* Step number badge */}
+                  <div className="relative mx-auto">
+                    <div className={`w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br ${item.color} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                      <Icon className="w-7 h-7 text-white" />
+                    </div>
+                    <span className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-white text-brand-900 text-xs font-extrabold flex items-center justify-center shadow-md">
+                      {item.step}
+                    </span>
+                  </div>
+                  <h4 className="text-lg font-bold text-white">{item.title}</h4>
+                  <p className="text-sm text-brand-200/90 leading-relaxed">
+                    {item.desc}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </RevealSection>

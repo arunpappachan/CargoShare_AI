@@ -31,7 +31,7 @@ export default function ProductPreview() {
           <div className="bg-slate-50 p-6 sm:p-8">
             <div className="bg-white rounded-2xl border border-slate-200 p-5 mb-4 flex flex-wrap items-center gap-4">
               <div className="flex items-center gap-2 text-sm font-semibold text-slate-700 bg-slate-100 px-3 py-2 rounded-xl">
-                <MapPin className="w-4 h-4 text-brand-600" /> Chennai &rarr; Rotterdam
+                <MapPin className="w-4 h-4 text-brand-600" /> Chennai &rarr; Mumbai
               </div>
               <div className="flex items-center gap-2 text-sm font-semibold text-slate-700 bg-slate-100 px-3 py-2 rounded-xl">
                 6.5 CBM
@@ -42,8 +42,8 @@ export default function ProductPreview() {
             </div>
 
             {[
-              { carrier: 'Oceanic Maritime Carriers', eta: '18 days', price: '$412', match: 98 },
-              { carrier: 'Nordic Sea Express', eta: '21 days', price: '$379', match: 91 },
+              { carrier: 'Oceanic Maritime Carriers', eta: '18 days', price: '₹412', match: 98 },
+              { carrier: 'Nordic Sea Express', eta: '21 days', price: '₹379', match: 91 },
             ].map((row) => (
               <div key={row.carrier} className="bg-white rounded-2xl border border-slate-200 p-4 mb-3 flex items-center gap-4">
                 <div className="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">

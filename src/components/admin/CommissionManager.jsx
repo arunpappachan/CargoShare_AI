@@ -3,8 +3,8 @@ import { Plus, Edit2, Trash2, X, Check, DollarSign } from 'lucide-react';
 
 export default function CommissionManager() {
   const [commissions, setCommissions] = useState([
-    { id: 'COM-501', carrier: 'Oceanic Freight Ltd.', amount: '$1,250.00', status: 'Paid', date: '2023-10-15' },
-    { id: 'COM-502', carrier: 'Maersk Logistics', amount: '$4,500.00', status: 'Pending', date: '2023-10-18' },
+    { id: 'COM-501', carrier: 'Oceanic Freight Ltd.', amount: '₹1,250.00', status: 'Paid', date: '2023-10-15' },
+    { id: 'COM-502', carrier: 'Maersk Logistics', amount: '₹4,500.00', status: 'Pending', date: '2023-10-18' },
   ]);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -70,7 +70,7 @@ export default function CommissionManager() {
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Amount</label>
-              <input required type="text" placeholder="$0.00" value={formData.amount} onChange={e => setFormData({...formData, amount: e.target.value})} className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none focus:border-emerald-500" />
+              <input required type="text" placeholder="₹0.00" value={formData.amount} onChange={e => setFormData({...formData, amount: e.target.value})} className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none focus:border-emerald-500" />
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Date</label>

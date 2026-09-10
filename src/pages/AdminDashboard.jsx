@@ -105,7 +105,7 @@ export default function AdminDashboard() {
               <div>
                 <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Platform GMV</p>
                 <div className="text-2xl font-extrabold text-slate-900 mt-0.5">
-                  <CountUp prefix="$" end={284.5} decimals={1} suffix="K" />
+                  <CountUp prefix="₹" end={284.5} decimals={1} suffix="K" />
                 </div>
                 <p className="text-[11px] text-emerald-600 font-bold mt-0.5">+22% month-over-month</p>
               </div>

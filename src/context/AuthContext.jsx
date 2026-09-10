@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { API_BASE } from '../lib/apiConfig';
 
 
 const AuthContext = createContext();
@@ -28,7 +29,7 @@ export const AuthProvider = ({ children }) => {
         return;
       }
 
-      const res = await fetch('http://localhost:5000/api/users/profile', {
+      const res = await fetch(`${API_BASE}/api/users/profile`, {
         headers: {
           Authorization: `Bearer ${activeToken}`,
         },
@@ -39,7 +40,9 @@ export const AuthProvider = ({ children }) => {
         setUser(json.data);
         localStorage.setItem('cargoshare_user', JSON.stringify(json.data));
 
-      } else if (res.status === 401 || res.status === 403) {
+      } else if (res.status === 401) {
+        // Only force-logout on 401 (invalid/expired token).
+        // 403 means "authenticated but not authorised" — don't wipe the session.
         logout();
       }
     } catch (err) {
@@ -50,7 +53,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (email, password, role) => {
-    const res = await fetch('http://localhost:5000/api/auth/login', {
+    const res = await fetch(`${API_BASE}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password, role }),
@@ -73,7 +76,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = async (userData) => {
-    const res = await fetch('http://localhost:5000/api/auth/register', {
+    const res = await fetch(`${API_BASE}/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(userData),
@@ -104,7 +107,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const updateProfile = async (profileData) => {
-    const res = await fetch('http://localhost:5000/api/users/profile', {
+    const res = await fetch(`${API_BASE}/api/users/profile`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

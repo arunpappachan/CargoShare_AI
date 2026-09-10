@@ -10,10 +10,15 @@ export default {
         brand: {
           50: '#f0f9ff',
           100: '#e0f2fe',
+          200: '#bae6fd',
+          300: '#7dd3fc',
+          400: '#38bdf8',
           500: '#0ea5e9',
           600: '#0284c7',
           700: '#0369a1',
+          800: '#075985',
           900: '#0c4a6e',
+          950: '#082f49',
         }
       },
       fontFamily: {
@@ -72,6 +77,14 @@ export default {
           '0%': { backgroundPosition: '-200% 0' },
           '100%': { backgroundPosition: '200% 0' },
         },
+        marquee: {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-100%)' },
+        },
+        'marquee-reverse': {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(0)' },
+        },
       },
       animation: {
         sail: 'sail 20s linear infinite',
@@ -89,6 +102,8 @@ export default {
         popIn: 'popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         slideInRight: 'slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         shimmer: 'shimmer 2.5s infinite',
+        marquee: 'marquee 30s linear infinite',
+        'marquee-reverse': 'marquee-reverse 30s linear infinite',
       }
     },
   },
