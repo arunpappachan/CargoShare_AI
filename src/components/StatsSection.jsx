@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, TrendingDown, Globe, ShieldCheck } from 'lucide-react';
 import CountUp from './common/CountUp';
+import RevealSection from './common/RevealSection';
 
 const STATS = [
   {
@@ -45,7 +46,7 @@ const STATS = [
 
 export default function StatsSection() {
   return (
-    <div className="relative z-20 -mt-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <RevealSection className="relative z-20 -mt-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="bg-white/95 backdrop-blur-xl rounded-3xl border border-slate-200/80 shadow-xl shadow-slate-900/5 p-6 sm:p-10">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 divide-y sm:divide-y-0 sm:divide-x divide-slate-100">
           {STATS.map((stat, idx) => {
@@ -81,6 +82,6 @@ export default function StatsSection() {
           })}
         </div>
       </div>
-    </div>
+    </RevealSection>
   );
 }

@@ -37,7 +37,7 @@ export default function ToastContainer() {
   return (
     <div
       aria-live="polite"
-      className="fixed bottom-5 right-5 z-50 flex flex-col gap-3 max-w-sm w-full pointer-events-none px-4 sm:px-0"
+      className="fixed top-5 right-5 z-50 flex flex-col gap-3 max-w-sm w-full pointer-events-none px-4 sm:px-0"
     >
       {toasts.map((t) => {
         const theme = TOAST_THEMES[t.type] || TOAST_THEMES.info;
@@ -47,7 +47,7 @@ export default function ToastContainer() {
           <div
             key={t.id}
             role="alert"
-            className={`pointer-events-auto relative overflow-hidden rounded-2xl border p-4 shadow-2xl backdrop-blur-xl transition-all duration-300 transform translate-y-0 opacity-100 animate-in fade-in slide-in-from-bottom-5 ${theme.bg}`}
+            className={`pointer-events-auto relative overflow-hidden rounded-2xl border p-4 shadow-2xl backdrop-blur-xl transition-all duration-300 transform translate-y-0 opacity-100 animate-in fade-in slide-in-from-top-5 ${theme.bg}`}
           >
             <div className="flex items-start gap-3">
               <div className={`p-2 rounded-xl shrink-0 ${theme.iconBg}`}>

@@ -30,8 +30,23 @@
     transform-style: preserve-3d;
   }
 
-  .input-focus-glow {
+  .input-focus-glow,
+  .focus-glow {
     @apply transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-brand-500/20 focus:border-brand-500;
+  }
+
+  .reveal-hidden {
+    opacity: 0;
+    transform: translateY(2rem);
+    pointer-events: none;
+    transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .reveal-visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+    transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
   }
 }
 

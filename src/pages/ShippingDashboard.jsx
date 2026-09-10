@@ -5,18 +5,19 @@ import CarrierOverview from '../components/carrier/CarrierOverview';
 import PostSpace from '../components/carrier/PostSpace';
 import BookingRequests from '../components/carrier/BookingRequests';
 import SidebarNav from '../components/common/SidebarNav';
+import CountUp from '../components/common/CountUp';
 import { useToast } from '../context/ToastContext';
 
 const CARRIER_NAV_ITEMS = [
-  { id: 'overview', label: 'Fleet Overview', icon: LayoutDashboard },
-  { id: 'post', label: 'Post Space', icon: PlusCircle },
-  { id: 'requests', label: 'Booking Requests', icon: Inbox, badge: 3 },
-  { id: 'profile', label: 'Carrier Profile', icon: User },
+  { key: 'overview', id: 'overview', label: 'Fleet Overview', icon: LayoutDashboard },
+  { key: 'post', id: 'post', label: 'Post Space', icon: PlusCircle },
+  { key: 'requests', id: 'requests', label: 'Booking Requests', icon: Inbox, badge: 3 },
+  { key: 'profile', id: 'profile', label: 'Carrier Profile', icon: User },
 ];
 
 export default function ShippingDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
-  const { toast } = useToast();
+  const { showToast } = useToast();
   const navigate = useNavigate();
 
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -28,7 +29,8 @@ export default function ShippingDashboard() {
   });
 
   const handleLogout = () => {
-    toast.info('Signed out of Carrier Fleet Hub.', 'Signed Out');
+    // Can be extended to booking approvals and schedule update alerts
+    showToast('Signed out of Carrier Fleet Hub', 'info');
     navigate('/login');
   };
 
@@ -55,9 +57,9 @@ export default function ShippingDashboard() {
         {/* Sliding Pill Sidebar Navigation */}
         <SidebarNav
           items={CARRIER_NAV_ITEMS}
-          activeId={activeTab}
+          activeKey={activeTab}
           onChange={setActiveTab}
-          accent="carrier"
+          accentClass="bg-blue-600 shadow-blue-500/20"
           className="z-10"
         />
 
@@ -77,7 +79,9 @@ export default function ShippingDashboard() {
             <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Fleet in Service</p>
-                <p className="text-2xl font-extrabold text-slate-900 mt-0.5">6 Vessels</p>
+                <div className="text-2xl font-extrabold text-slate-900 mt-0.5">
+                  <CountUp end={6} suffix=" Vessels" />
+                </div>
                 <p className="text-[11px] text-blue-600 font-bold mt-0.5">All routes on schedule</p>
               </div>
               <div className="p-3 rounded-xl bg-blue-50 text-blue-600">
@@ -88,7 +92,9 @@ export default function ShippingDashboard() {
             <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Capacity Listed</p>
-                <p className="text-2xl font-extrabold text-slate-900 mt-0.5">180 CBM</p>
+                <div className="text-2xl font-extrabold text-slate-900 mt-0.5">
+                  <CountUp end={180} suffix=" CBM" />
+                </div>
                 <p className="text-[11px] text-slate-500 font-medium mt-0.5">Available for matching</p>
               </div>
               <div className="p-3 rounded-xl bg-cyan-50 text-cyan-600">
@@ -99,7 +105,9 @@ export default function ShippingDashboard() {
             <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Pending Bookings</p>
-                <p className="text-2xl font-extrabold text-amber-600 mt-0.5">3 Requests</p>
+                <div className="text-2xl font-extrabold text-amber-600 mt-0.5">
+                  <CountUp end={3} suffix=" Requests" />
+                </div>
                 <p className="text-[11px] text-amber-600 font-bold mt-0.5">Requires approval</p>
               </div>
               <div className="p-3 rounded-xl bg-amber-50 text-amber-600">
@@ -110,7 +118,9 @@ export default function ShippingDashboard() {
             <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Slot Utilization</p>
-                <p className="text-2xl font-extrabold text-emerald-600 mt-0.5">91.4%</p>
+                <div className="text-2xl font-extrabold text-emerald-600 mt-0.5">
+                  <CountUp end={91.4} decimals={1} suffix="%" />
+                </div>
                 <p className="text-[11px] text-emerald-600 font-bold mt-0.5">+14% vs industry avg</p>
               </div>
               <div className="p-3 rounded-xl bg-emerald-50 text-emerald-600">

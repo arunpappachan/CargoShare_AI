@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 export default function MagneticButton({
   children,
   to,
+  as: CustomComponent,
   onClick,
   className = '',
   strength = 0.28,
@@ -79,6 +80,24 @@ export default function MagneticButton({
   );
 
   const sharedClasses = `relative overflow-hidden select-none inline-flex items-center justify-center transition-shadow duration-200 ${className}`;
+
+  if (CustomComponent) {
+    const Component = CustomComponent;
+    return (
+      <Component
+        ref={buttonRef}
+        to={to}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        onClick={handleClick}
+        style={style}
+        className={sharedClasses}
+        {...props}
+      >
+        {content}
+      </Component>
+    );
+  }
 
   if (to) {
     return (

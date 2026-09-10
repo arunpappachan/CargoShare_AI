@@ -13,7 +13,7 @@ export function ToastProvider({ children }) {
     type = 'info', // 'success' | 'error' | 'info' | 'warning'
     title,
     message,
-    duration = 4000,
+    duration = 3500,
   }) => {
     const id = Date.now() + Math.random();
     const newToast = { id, type, title, message, duration };
@@ -29,6 +29,10 @@ export function ToastProvider({ children }) {
     return id;
   }, [removeToast]);
 
+  const showToast = useCallback((message, type = 'info') => {
+    return addToast({ message, type });
+  }, [addToast]);
+
   const toast = useCallback((options) => {
     if (typeof options === 'string') {
       return addToast({ message: options });
@@ -42,7 +46,7 @@ export function ToastProvider({ children }) {
   toast.warning = (message, title = 'Warning') => addToast({ type: 'warning', title, message });
 
   return (
-    <ToastContext.Provider value={{ toasts, addToast, removeToast, toast }}>
+    <ToastContext.Provider value={{ toasts, addToast, removeToast, toast, showToast }}>
       {children}
     </ToastContext.Provider>
   );

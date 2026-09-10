@@ -7,23 +7,25 @@ import ShipmentTracking from '../components/exporter/ShipmentTracking';
 import DocumentManagement from '../components/exporter/DocumentManagement';
 import Profile from './Profile';
 import SidebarNav from '../components/common/SidebarNav';
+import CountUp from '../components/common/CountUp';
 import { useToast } from '../context/ToastContext';
 
 const NAV_ITEMS = [
-  { id: 'search', label: 'Search Space', icon: Search },
-  { id: 'bookings', label: 'My Bookings', icon: List, badge: 4 },
-  { id: 'tracking', label: 'Track Cargo', icon: MapPin },
-  { id: 'documents', label: 'Docs & Customs', icon: FileText },
-  { id: 'profile', label: 'Profile', icon: User },
+  { key: 'search', id: 'search', label: 'Search Space', icon: Search },
+  { key: 'bookings', id: 'bookings', label: 'My Bookings', icon: List, badge: 4 },
+  { key: 'tracking', id: 'tracking', label: 'Track Cargo', icon: MapPin },
+  { key: 'documents', id: 'documents', label: 'Docs & Customs', icon: FileText },
+  { key: 'profile', id: 'profile', label: 'Profile', icon: User },
 ];
 
 export default function ExporterDashboard() {
   const [activeTab, setActiveTab] = useState('search');
-  const { toast } = useToast();
+  const { showToast } = useToast();
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    toast.info('Signed out of Exporter Portal.', 'Signed Out');
+    // Can be extended to booking status changes and customs document notifications
+    showToast('Signed out of Exporter Portal', 'info');
     navigate('/login');
   };
 
@@ -50,9 +52,9 @@ export default function ExporterDashboard() {
         {/* Sliding Pill Sidebar Navigation */}
         <SidebarNav
           items={NAV_ITEMS}
-          activeId={activeTab}
+          activeKey={activeTab}
           onChange={setActiveTab}
-          accent="exporter"
+          accentClass="bg-gradient-to-r from-brand-600 to-brand-500 shadow-brand-500/25"
           className="z-10"
         />
 
@@ -72,7 +74,9 @@ export default function ExporterDashboard() {
             <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Active Bookings</p>
-                <p className="text-2xl font-extrabold text-slate-900 mt-0.5">4 Slots</p>
+                <div className="text-2xl font-extrabold text-slate-900 mt-0.5">
+                  <CountUp end={4} suffix=" Slots" />
+                </div>
                 <p className="text-[11px] text-emerald-600 font-bold mt-0.5">2 in transit</p>
               </div>
               <div className="p-3 rounded-xl bg-brand-50 text-brand-600">
@@ -83,7 +87,9 @@ export default function ExporterDashboard() {
             <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Space Allocated</p>
-                <p className="text-2xl font-extrabold text-slate-900 mt-0.5">28.4 CBM</p>
+                <div className="text-2xl font-extrabold text-slate-900 mt-0.5">
+                  <CountUp end={28.4} decimals={1} suffix=" CBM" />
+                </div>
                 <p className="text-[11px] text-slate-500 font-medium mt-0.5">Across 3 carriers</p>
               </div>
               <div className="p-3 rounded-xl bg-blue-50 text-blue-600">
@@ -94,7 +100,9 @@ export default function ExporterDashboard() {
             <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Estimated Savings</p>
-                <p className="text-2xl font-extrabold text-emerald-600 mt-0.5">$3,420</p>
+                <div className="text-2xl font-extrabold text-emerald-600 mt-0.5">
+                  <CountUp prefix="$" end={3420} duration={2000} />
+                </div>
                 <p className="text-[11px] text-emerald-600 font-bold mt-0.5">-34% vs FCL charter</p>
               </div>
               <div className="p-3 rounded-xl bg-emerald-50 text-emerald-600">
@@ -105,7 +113,9 @@ export default function ExporterDashboard() {
             <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Compliance</p>
-                <p className="text-2xl font-extrabold text-slate-900 mt-0.5">100%</p>
+                <div className="text-2xl font-extrabold text-slate-900 mt-0.5">
+                  <CountUp end={100} suffix="%" />
+                </div>
                 <p className="text-[11px] text-brand-600 font-bold mt-0.5">Customs pre-cleared</p>
               </div>
               <div className="p-3 rounded-xl bg-indigo-50 text-indigo-600">

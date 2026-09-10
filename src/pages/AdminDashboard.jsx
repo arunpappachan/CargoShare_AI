@@ -9,26 +9,28 @@ import SettingsManager from '../components/admin/SettingsManager';
 import ExporterManager from '../components/admin/ExporterManager';
 import CarrierManager from '../components/admin/CarrierManager';
 import SidebarNav from '../components/common/SidebarNav';
+import CountUp from '../components/common/CountUp';
 import { useToast } from '../context/ToastContext';
 
 const ADMIN_NAV_ITEMS = [
-  { id: 'overview', label: 'System Overview', icon: Activity },
-  { id: 'exporters', label: 'Exporters (SMEs)', icon: Users },
-  { id: 'carriers', label: 'Shipping Carriers', icon: Ship },
-  { id: 'bookings', label: 'Booking Mgmt', icon: BookOpen, badge: 12 },
-  { id: 'fraud', label: 'Fraud Detection', icon: AlertTriangle, badge: 'Active' },
-  { id: 'commission', label: 'Commission Mgmt', icon: DollarSign },
-  { id: 'reports', label: 'Reports & Analytics', icon: BarChart2 },
-  { id: 'settings', label: 'Settings', icon: Settings },
+  { key: 'overview', id: 'overview', label: 'System Overview', icon: Activity },
+  { key: 'exporters', id: 'exporters', label: 'Exporters (SMEs)', icon: Users },
+  { key: 'carriers', id: 'carriers', label: 'Shipping Carriers', icon: Ship },
+  { key: 'bookings', id: 'bookings', label: 'Booking Mgmt', icon: BookOpen, badge: 12 },
+  { key: 'fraud', id: 'fraud', label: 'Fraud Detection', icon: AlertTriangle, badge: 'Active' },
+  { key: 'commission', id: 'commission', label: 'Commission Mgmt', icon: DollarSign },
+  { key: 'reports', id: 'reports', label: 'Reports & Analytics', icon: BarChart2 },
+  { key: 'settings', id: 'settings', label: 'Settings', icon: Settings },
 ];
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
-  const { toast } = useToast();
+  const { showToast } = useToast();
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    toast.info('Signed out of Administrator Console.', 'Signed Out');
+    // Can be extended to fraud alerts, user approvals, and commission notifications
+    showToast('Signed out of Administrator Console', 'info');
     navigate('/login');
   };
 
@@ -54,9 +56,9 @@ export default function AdminDashboard() {
         {/* Sliding Pill Sidebar Navigation */}
         <SidebarNav
           items={ADMIN_NAV_ITEMS}
-          activeId={activeTab}
+          activeKey={activeTab}
           onChange={setActiveTab}
-          accent="admin"
+          accentClass="bg-gradient-to-r from-purple-600 to-purple-500 shadow-purple-500/25"
           className="z-10"
         />
 
@@ -76,7 +78,9 @@ export default function AdminDashboard() {
             <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Registered Shippers</p>
-                <p className="text-2xl font-extrabold text-slate-900 mt-0.5">142 SMEs</p>
+                <div className="text-2xl font-extrabold text-slate-900 mt-0.5">
+                  <CountUp end={142} suffix=" SMEs" />
+                </div>
                 <p className="text-[11px] text-purple-600 font-bold mt-0.5">+18 this month</p>
               </div>
               <div className="p-3 rounded-xl bg-purple-50 text-purple-600">
@@ -87,7 +91,9 @@ export default function AdminDashboard() {
             <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Partner Carriers</p>
-                <p className="text-2xl font-extrabold text-slate-900 mt-0.5">18 Lines</p>
+                <div className="text-2xl font-extrabold text-slate-900 mt-0.5">
+                  <CountUp end={18} suffix=" Lines" />
+                </div>
                 <p className="text-[11px] text-blue-600 font-medium mt-0.5">100% verified KYC</p>
               </div>
               <div className="p-3 rounded-xl bg-blue-50 text-blue-600">
@@ -98,7 +104,9 @@ export default function AdminDashboard() {
             <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Platform GMV</p>
-                <p className="text-2xl font-extrabold text-slate-900 mt-0.5">$284.5K</p>
+                <div className="text-2xl font-extrabold text-slate-900 mt-0.5">
+                  <CountUp prefix="$" end={284.5} decimals={1} suffix="K" />
+                </div>
                 <p className="text-[11px] text-emerald-600 font-bold mt-0.5">+22% month-over-month</p>
               </div>
               <div className="p-3 rounded-xl bg-emerald-50 text-emerald-600">

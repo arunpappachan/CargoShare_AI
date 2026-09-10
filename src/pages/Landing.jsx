@@ -44,6 +44,7 @@ export default function Landing() {
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center mb-10">
                 <MagneticButton 
+                  as={Link}
                   to="/register" 
                   className="w-full sm:w-auto inline-flex justify-center items-center gap-2 bg-slate-900 text-white px-8 py-4 rounded-2xl font-semibold hover:bg-brand-600 shadow-xl shadow-slate-900/20 hover:shadow-brand-500/30 transition-all duration-300"
                 >

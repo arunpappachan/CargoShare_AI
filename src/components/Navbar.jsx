@@ -109,6 +109,7 @@ export default function Navbar() {
                   Sign In
                 </Link>
                 <MagneticButton
+                  as={Link}
                   to="/register"
                   className="text-sm font-medium bg-brand-600 text-white px-5 py-2.5 rounded-xl hover:bg-brand-700 shadow-sm shadow-brand-500/20"
                 >

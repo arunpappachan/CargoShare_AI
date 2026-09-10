@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Ship, Mail, ArrowRight, Check, Shield, Globe, Anchor } from 'lucide-react';
+import { Ship, Mail, ArrowRight, Check, Shield, Globe, Anchor, Twitter, Linkedin, Github } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 
 export default function Footer() {
@@ -50,6 +50,44 @@ export default function Footer() {
                 <Globe className="w-4 h-4 text-brand-400" />
                 <span>Global Ocean Routing</span>
               </div>
+            </div>
+
+            {/* Social Channels */}
+            <div className="flex items-center gap-3 pt-1">
+              <a
+                href="https://twitter.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="CargoShare on Twitter"
+                className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-brand-400 hover:border-brand-500/40 transition-colors"
+              >
+                <Twitter className="w-4 h-4" />
+              </a>
+              <a
+                href="https://linkedin.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="CargoShare on LinkedIn"
+                className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-brand-400 hover:border-brand-500/40 transition-colors"
+              >
+                <Linkedin className="w-4 h-4" />
+              </a>
+              <a
+                href="https://github.com/arunpappachan/CargoShare_AI"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="CargoShare on GitHub"
+                className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-brand-400 hover:border-brand-500/40 transition-colors"
+              >
+                <Github className="w-4 h-4" />
+              </a>
+              <a
+                href="/"
+                aria-label="CargoShare Platform"
+                className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-brand-400 hover:border-brand-500/40 transition-colors"
+              >
+                <Globe className="w-4 h-4" />
+              </a>
             </div>
           </div>
 

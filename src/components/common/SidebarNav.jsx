@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 
 const ACCENT_STYLES = {
   exporter: {
@@ -23,34 +23,57 @@ const ACCENT_STYLES = {
 
 export default function SidebarNav({
   items = [],
+  activeKey,
   activeId,
   onChange,
+  accentClass,
   accent = 'exporter', // 'exporter' | 'carrier' | 'admin'
   className = '',
 }) {
+  const currentKey = activeKey !== undefined ? activeKey : activeId;
   const containerRef = useRef(null);
   const itemRefs = useRef({});
   const [pillLayout, setPillLayout] = useState({ top: 0, height: 0, ready: false });
 
   const activeTheme = ACCENT_STYLES[accent] || ACCENT_STYLES.exporter;
+  const pillClass = accentClass || activeTheme.pill;
+
+  const measure = useCallback(() => {
+    const activeEl = itemRefs.current[currentKey];
+    if (activeEl) {
+      setPillLayout({
+        top: activeEl.offsetTop,
+        height: activeEl.offsetHeight,
+        ready: true,
+      });
+    }
+  }, [currentKey]);
 
   useEffect(() => {
-    const activeEl = itemRefs.current[activeId];
-    const containerEl = containerRef.current;
+    measure();
 
-    if (activeEl && containerEl) {
-      const top = activeEl.offsetTop;
-      const height = activeEl.offsetHeight;
-      setPillLayout({ top, height, ready: true });
-    }
-  }, [activeId, items]);
+    // Re-measure once the web font has actually finished loading —
+    // metrics can shift after the initial fallback-font layout.
+    document.fonts?.ready?.then(measure);
+
+    // Re-measure on resize/zoom.
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [measure, items]);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const ro = new ResizeObserver(measure);
+    ro.observe(containerRef.current);
+    return () => ro.disconnect();
+  }, [measure]);
 
   return (
     <nav ref={containerRef} className={`relative flex-1 px-4 py-6 space-y-2 select-none ${className}`}>
       {/* Sliding Active Pill */}
       {pillLayout.ready && (
         <div
-          className={`absolute left-4 right-4 rounded-2xl transition-all duration-300 ease-out shadow-lg pointer-events-none z-0 ${activeTheme.pill}`}
+          className={`absolute left-4 right-4 top-0 rounded-2xl transition-all duration-300 ease-out shadow-lg pointer-events-none z-0 ${pillClass}`}
           style={{
             transform: `translate3d(0, ${pillLayout.top}px, 0)`,
             height: `${pillLayout.height}px`,
@@ -60,17 +83,18 @@ export default function SidebarNav({
 
       {/* Nav items */}
       {items.map((item) => {
-        const isActive = activeId === item.id;
+        const itemKey = item.key !== undefined ? item.key : item.id;
+        const isActive = currentKey === itemKey;
         const Icon = item.icon;
 
         return (
           <button
-            key={item.id}
+            key={itemKey}
             ref={(el) => {
-              if (el) itemRefs.current[item.id] = el;
+              if (el) itemRefs.current[itemKey] = el;
             }}
             type="button"
-            onClick={() => onChange(item.id)}
+            onClick={() => onChange(itemKey)}
             className={`w-full flex items-center justify-between px-4 py-3.5 rounded-2xl text-left relative z-10 text-sm transition-all duration-200 ${
               isActive ? activeTheme.activeText : activeTheme.inactiveText
             }`}
