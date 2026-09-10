@@ -4,6 +4,8 @@ import { Box, TrendingDown, ShieldCheck, Zap, ArrowRight, Ship, Search, Cpu, Cre
 import OrbitHub from '../components/OrbitHub';
 import StatsSection from '../components/StatsSection';
 import TestimonialsSection from '../components/TestimonialsSection';
+import ProductPreview from '../components/ProductPreview';
+import ClosingCTA from '../components/ClosingCTA';
 import RevealSection from '../components/common/RevealSection';
 import TiltCard from '../components/common/TiltCard';
 import MagneticButton from '../components/common/MagneticButton';
@@ -91,8 +93,11 @@ export default function Landing() {
       <StatsSection />
 
       {/* Features Section */}
-      <RevealSection className="py-24 bg-white" id="features">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <RevealSection className="py-24 bg-white relative overflow-hidden" id="features">
+        {/* Subtle dot-grid texture */}
+        <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:24px_24px] opacity-60 pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">
               Why choose CargoShare AI?
@@ -163,6 +168,12 @@ export default function Landing() {
         </div>
       </RevealSection>
 
+      {/* Product Live Platform Preview */}
+      <ProductPreview />
+
+      {/* Section Transition Soft Blend into Dark Section */}
+      <div className="h-20 bg-gradient-to-b from-white to-brand-900 -mb-px relative z-10 pointer-events-none" />
+
       {/* How it Works & Animation */}
       <RevealSection className="py-24 bg-brand-900 text-white overflow-hidden relative" id="how-it-works">
         {/* Animated Cargo Ship */}
@@ -231,22 +242,54 @@ export default function Landing() {
         <TestimonialsSection />
       </RevealSection>
 
-      {/* About Section */}
+      {/* About Section - Structured Two-Column Layout */}
       <RevealSection className="py-24 bg-slate-50 border-t border-slate-200" id="about">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-8 tracking-tight">
-            About CargoShare AI
-          </h2>
-          <div className="bg-white p-8 sm:p-12 rounded-3xl shadow-sm border border-slate-200 text-base sm:text-lg text-slate-700 leading-relaxed space-y-6">
-            <p>
-              CargoShare AI is an AI-powered container-sharing logistics marketplace engineered to dismantle high barrier-to-entry costs for small and medium exporters. By allowing shippers to book exactly the volumetric space they need rather than full TEU containers, we democratize international ocean logistics.
-            </p>
-            <p>
-              The platform orchestrates a multi-tenant digital ecosystem where exporters, ocean carriers, customs officers, and freight operators collaborate in real time—with automated documentation, transparent slot pricing, and verifiable GPS milestone tracking.
-            </p>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+
+            <div>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-6 tracking-tight">
+                About CargoShare AI
+              </h2>
+              <div className="space-y-5 text-slate-700 leading-relaxed">
+                <p>
+                  CargoShare AI is an AI-powered container-sharing logistics marketplace engineered to
+                  dismantle high barrier-to-entry costs for small and medium exporters. By allowing
+                  shippers to book exactly the volumetric space they need rather than full TEU
+                  containers, we democratize international ocean logistics.
+                </p>
+                <p>
+                  The platform orchestrates a multi-tenant digital ecosystem where exporters, ocean
+                  carriers, customs officers, and freight operators collaborate in real time.
+                </p>
+              </div>
+            </div>
+
+            {/* Value pillar list — fills the previously-empty right column */}
+            <div className="space-y-4">
+              {[
+                { icon: Box, title: 'Shared container capacity', text: 'Book by CBM, not by full TEU.' },
+                { icon: ShieldCheck, title: 'Escrow-protected bookings', text: 'Funds released on verified milestones.' },
+                { icon: Cpu, title: 'AI-matched routing', text: 'Optimal carrier and lane selection, automatically.' },
+              ].map((item) => (
+                <div key={item.title} className="flex items-start gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:border-brand-200 transition-colors">
+                  <div className="w-11 h-11 shrink-0 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center">
+                    <item.icon className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-900">{item.title}</h4>
+                    <p className="text-xs text-slate-500 mt-0.5">{item.text}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
           </div>
         </div>
       </RevealSection>
+
+      {/* Closing CTA Band */}
+      <ClosingCTA />
       
     </div>
   );

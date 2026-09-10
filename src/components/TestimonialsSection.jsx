@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, Quote, ShieldCheck, CheckCircle, Ship, Award } from 'lucide-react';
+import { Star, Quote, ShieldCheck, CheckCircle, Ship, Award, Anchor, Container, Waves, Compass, Globe } from 'lucide-react';
 import TiltCard from './common/TiltCard';
 
 const TESTIMONIALS = [
@@ -36,11 +36,11 @@ const TESTIMONIALS = [
 ];
 
 const TRUST_PARTNERS = [
-  "Pacific Sealink",
-  "Trans-Atlantic Cargo",
-  "Nordic Sea Express",
-  "Asia-Pacific Forwarding",
-  "Global Port Escrow",
+  { name: "Pacific Sealink", icon: Anchor },
+  { name: "Trans-Atlantic Cargo", icon: Container },
+  { name: "Nordic Sea Express", icon: Waves },
+  { name: "Asia-Pacific Forwarding", icon: Compass },
+  { name: "Global Port Escrow", icon: Globe },
 ];
 
 export default function TestimonialsSection() {
@@ -111,15 +111,18 @@ export default function TestimonialsSection() {
             Compatible with Leading Sea Carriers & Freight Forwarders
           </p>
           <div className="flex flex-wrap justify-center items-center gap-6 sm:gap-12 opacity-60">
-            {TRUST_PARTNERS.map((partner, idx) => (
-              <div
-                key={idx}
-                className="flex items-center gap-2 text-slate-500 font-bold text-sm tracking-tight hover:opacity-100 hover:text-slate-800 transition-opacity"
-              >
-                <Ship className="w-4 h-4 text-brand-600" />
-                <span>{partner}</span>
-              </div>
-            ))}
+            {TRUST_PARTNERS.map((partner, idx) => {
+              const Icon = partner.icon;
+              return (
+                <div
+                  key={idx}
+                  className="flex items-center gap-2 text-slate-500 font-bold text-sm tracking-tight hover:opacity-100 hover:text-slate-800 transition-opacity"
+                >
+                  <Icon className="w-4 h-4 text-brand-600" />
+                  <span>{partner.name}</span>
+                </div>
+              );
+            })}
           </div>
         </div>
 
