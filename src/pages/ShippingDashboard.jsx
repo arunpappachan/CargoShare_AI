@@ -1,12 +1,22 @@
 import React, { useState } from 'react';
-import { Ship, LayoutDashboard, PlusCircle, Inbox, User, LogOut, Package } from 'lucide-react';
+import { Ship, LayoutDashboard, PlusCircle, Inbox, User, LogOut, Package, Anchor, CheckCircle2, TrendingUp, BarChart3 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import CarrierOverview from '../components/carrier/CarrierOverview';
 import PostSpace from '../components/carrier/PostSpace';
 import BookingRequests from '../components/carrier/BookingRequests';
+import SidebarNav from '../components/common/SidebarNav';
+import { useToast } from '../context/ToastContext';
+
+const CARRIER_NAV_ITEMS = [
+  { id: 'overview', label: 'Fleet Overview', icon: LayoutDashboard },
+  { id: 'post', label: 'Post Space', icon: PlusCircle },
+  { id: 'requests', label: 'Booking Requests', icon: Inbox, badge: 3 },
+  { id: 'profile', label: 'Carrier Profile', icon: User },
+];
 
 export default function ShippingDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
+  const { toast } = useToast();
   const navigate = useNavigate();
 
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -17,7 +27,10 @@ export default function ShippingDashboard() {
     phone: '+1 (555) 123-4567'
   });
 
-  const handleLogout = () => navigate('/login');
+  const handleLogout = () => {
+    toast.info('Signed out of Carrier Fleet Hub.', 'Signed Out');
+    navigate('/login');
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 flex font-sans relative overflow-hidden">
@@ -39,35 +52,14 @@ export default function ShippingDashboard() {
           </Link>
         </div>
 
-        <nav className="flex-1 px-4 py-8 space-y-3 relative z-10">
-          <button 
-            onClick={() => setActiveTab('overview')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${activeTab === 'overview' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'}`}
-          >
-            <LayoutDashboard className="w-5 h-5" /> Overview
-          </button>
-          
-          <button 
-            onClick={() => setActiveTab('post')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${activeTab === 'post' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'}`}
-          >
-            <PlusCircle className="w-5 h-5" /> Post Space
-          </button>
-
-          <button 
-            onClick={() => setActiveTab('requests')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium flex-wrap ${activeTab === 'requests' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'}`}
-          >
-            <Inbox className="w-5 h-5" /> Booking Requests
-          </button>
-
-          <button 
-            onClick={() => setActiveTab('profile')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${activeTab === 'profile' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'}`}
-          >
-            <User className="w-5 h-5" /> Profile
-          </button>
-        </nav>
+        {/* Sliding Pill Sidebar Navigation */}
+        <SidebarNav
+          items={CARRIER_NAV_ITEMS}
+          activeId={activeTab}
+          onChange={setActiveTab}
+          accent="carrier"
+          className="z-10"
+        />
 
         <div className="p-4 border-t border-slate-800/50 relative z-10">
           <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-500/10 hover:text-red-400 text-slate-400 transition-all font-medium mt-auto">
@@ -79,6 +71,54 @@ export default function ShippingDashboard() {
       {/* Main Content Area */}
       <main className="flex-1 ml-64 p-8 relative z-10 min-h-screen">
         <div className="max-w-6xl mx-auto">
+          
+          {/* Top Carrier Metrics Strip */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Fleet in Service</p>
+                <p className="text-2xl font-extrabold text-slate-900 mt-0.5">6 Vessels</p>
+                <p className="text-[11px] text-blue-600 font-bold mt-0.5">All routes on schedule</p>
+              </div>
+              <div className="p-3 rounded-xl bg-blue-50 text-blue-600">
+                <Ship className="w-5 h-5" />
+              </div>
+            </div>
+
+            <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Capacity Listed</p>
+                <p className="text-2xl font-extrabold text-slate-900 mt-0.5">180 CBM</p>
+                <p className="text-[11px] text-slate-500 font-medium mt-0.5">Available for matching</p>
+              </div>
+              <div className="p-3 rounded-xl bg-cyan-50 text-cyan-600">
+                <Package className="w-5 h-5" />
+              </div>
+            </div>
+
+            <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Pending Bookings</p>
+                <p className="text-2xl font-extrabold text-amber-600 mt-0.5">3 Requests</p>
+                <p className="text-[11px] text-amber-600 font-bold mt-0.5">Requires approval</p>
+              </div>
+              <div className="p-3 rounded-xl bg-amber-50 text-amber-600">
+                <Inbox className="w-5 h-5" />
+              </div>
+            </div>
+
+            <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Slot Utilization</p>
+                <p className="text-2xl font-extrabold text-emerald-600 mt-0.5">91.4%</p>
+                <p className="text-[11px] text-emerald-600 font-bold mt-0.5">+14% vs industry avg</p>
+              </div>
+              <div className="p-3 rounded-xl bg-emerald-50 text-emerald-600">
+                <TrendingUp className="w-5 h-5" />
+              </div>
+            </div>
+          </div>
+
           {activeTab === 'overview' && <CarrierOverview />}
           {activeTab === 'post' && <PostSpace />}
           {activeTab === 'requests' && <BookingRequests />}

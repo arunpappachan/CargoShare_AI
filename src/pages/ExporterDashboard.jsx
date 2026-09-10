@@ -1,17 +1,29 @@
 import React, { useState } from 'react';
-import { Search, List, User, Ship, LogOut, MapPin, FileText } from 'lucide-react';
+import { Search, List, User, Ship, LogOut, MapPin, FileText, Box, TrendingDown, Clock, ShieldCheck } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import SearchSpace from '../components/exporter/SearchSpace';
 import BookingsList from '../components/exporter/BookingsList';
 import ShipmentTracking from '../components/exporter/ShipmentTracking';
 import DocumentManagement from '../components/exporter/DocumentManagement';
 import Profile from './Profile';
+import SidebarNav from '../components/common/SidebarNav';
+import { useToast } from '../context/ToastContext';
+
+const NAV_ITEMS = [
+  { id: 'search', label: 'Search Space', icon: Search },
+  { id: 'bookings', label: 'My Bookings', icon: List, badge: 4 },
+  { id: 'tracking', label: 'Track Cargo', icon: MapPin },
+  { id: 'documents', label: 'Docs & Customs', icon: FileText },
+  { id: 'profile', label: 'Profile', icon: User },
+];
 
 export default function ExporterDashboard() {
   const [activeTab, setActiveTab] = useState('search');
+  const { toast } = useToast();
   const navigate = useNavigate();
 
   const handleLogout = () => {
+    toast.info('Signed out of Exporter Portal.', 'Signed Out');
     navigate('/login');
   };
 
@@ -35,42 +47,14 @@ export default function ExporterDashboard() {
           </Link>
         </div>
 
-        <nav className="flex-1 px-4 py-8 space-y-3 relative z-10">
-          <button 
-            onClick={() => setActiveTab('search')}
-            className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium ${activeTab === 'search' ? 'bg-gradient-to-r from-brand-600 to-brand-500 text-white shadow-lg shadow-brand-500/25 border border-brand-400/30' : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'}`}
-          >
-            <Search className="w-5 h-5" /> Search Space
-          </button>
-          
-          <button 
-            onClick={() => setActiveTab('bookings')}
-            className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium ${activeTab === 'bookings' ? 'bg-gradient-to-r from-brand-600 to-brand-500 text-white shadow-lg shadow-brand-500/25 border border-brand-400/30' : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'}`}
-          >
-            <List className="w-5 h-5" /> My Bookings
-          </button>
-
-          <button 
-            onClick={() => setActiveTab('tracking')}
-            className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium ${activeTab === 'tracking' ? 'bg-gradient-to-r from-brand-600 to-brand-500 text-white shadow-lg shadow-brand-500/25 border border-brand-400/30' : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'}`}
-          >
-            <MapPin className="w-5 h-5" /> Track Cargo
-          </button>
-
-          <button 
-            onClick={() => setActiveTab('documents')}
-            className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium ${activeTab === 'documents' ? 'bg-gradient-to-r from-brand-600 to-brand-500 text-white shadow-lg shadow-brand-500/25 border border-brand-400/30' : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'}`}
-          >
-            <FileText className="w-5 h-5" /> Docs & Customs
-          </button>
-
-          <button 
-            onClick={() => setActiveTab('profile')}
-            className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium ${activeTab === 'profile' ? 'bg-gradient-to-r from-brand-600 to-brand-500 text-white shadow-lg shadow-brand-500/25 border border-brand-400/30' : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'}`}
-          >
-            <User className="w-5 h-5" /> Profile
-          </button>
-        </nav>
+        {/* Sliding Pill Sidebar Navigation */}
+        <SidebarNav
+          items={NAV_ITEMS}
+          activeId={activeTab}
+          onChange={setActiveTab}
+          accent="exporter"
+          className="z-10"
+        />
 
         <div className="p-4 border-t border-slate-800/50 relative z-10">
           <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl hover:bg-red-500/10 hover:text-red-400 text-slate-400 transition-all font-medium">
@@ -82,6 +66,54 @@ export default function ExporterDashboard() {
       {/* Main Content Area */}
       <main className="flex-1 ml-64 p-8 relative z-10 min-h-screen">
         <div className="max-w-5xl mx-auto">
+
+          {/* Quick Metrics Bar across Dashboard */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Active Bookings</p>
+                <p className="text-2xl font-extrabold text-slate-900 mt-0.5">4 Slots</p>
+                <p className="text-[11px] text-emerald-600 font-bold mt-0.5">2 in transit</p>
+              </div>
+              <div className="p-3 rounded-xl bg-brand-50 text-brand-600">
+                <Box className="w-5 h-5" />
+              </div>
+            </div>
+
+            <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Space Allocated</p>
+                <p className="text-2xl font-extrabold text-slate-900 mt-0.5">28.4 CBM</p>
+                <p className="text-[11px] text-slate-500 font-medium mt-0.5">Across 3 carriers</p>
+              </div>
+              <div className="p-3 rounded-xl bg-blue-50 text-blue-600">
+                <Ship className="w-5 h-5" />
+              </div>
+            </div>
+
+            <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Estimated Savings</p>
+                <p className="text-2xl font-extrabold text-emerald-600 mt-0.5">$3,420</p>
+                <p className="text-[11px] text-emerald-600 font-bold mt-0.5">-34% vs FCL charter</p>
+              </div>
+              <div className="p-3 rounded-xl bg-emerald-50 text-emerald-600">
+                <TrendingDown className="w-5 h-5" />
+              </div>
+            </div>
+
+            <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Compliance</p>
+                <p className="text-2xl font-extrabold text-slate-900 mt-0.5">100%</p>
+                <p className="text-[11px] text-brand-600 font-bold mt-0.5">Customs pre-cleared</p>
+              </div>
+              <div className="p-3 rounded-xl bg-indigo-50 text-indigo-600">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+            </div>
+          </div>
+
           {activeTab === 'search' && <SearchSpace />}
           {activeTab === 'bookings' && <BookingsList />}
           {activeTab === 'tracking' && <ShipmentTracking />}

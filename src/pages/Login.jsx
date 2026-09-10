@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Ship, Mail, Lock, Briefcase, Eye, EyeOff, AlertCircle, Shield } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 
 export default function Login() {
   const [role, setRole] = useState('exporter');
@@ -13,6 +14,7 @@ export default function Login() {
   const [errorCode, setErrorCode] = useState('');
 
   const { login } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -24,6 +26,7 @@ export default function Login() {
     try {
       const data = await login(email, password, role);
       const userRole = data.user?.role || role;
+      toast.success(`Welcome back, ${data.user?.name || 'User'}!`, 'Authenticated');
 
       if (userRole === 'admin') {
         navigate('/dashboard/admin');
@@ -33,7 +36,9 @@ export default function Login() {
         navigate('/dashboard/carrier');
       }
     } catch (err) {
-      setErrorMsg(err.message || 'Login failed. Please check your credentials.');
+      const msg = err.message || 'Login failed. Please check your credentials.';
+      setErrorMsg(msg);
+      toast.error(msg, 'Login Failed');
     } finally {
       setLoading(false);
     }
@@ -151,7 +156,7 @@ export default function Login() {
                   type="text" 
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all bg-slate-50 focus:bg-white text-sm"
+                  className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all duration-200 bg-slate-50 focus:bg-white text-sm shadow-sm"
                   placeholder="Email address (e.g. exporter@cargoshare.ai)"
                   required 
                 />
@@ -170,7 +175,7 @@ export default function Login() {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-11 pr-12 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all bg-slate-50 focus:bg-white text-sm"
+                  className="w-full pl-11 pr-12 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all duration-200 bg-slate-50 focus:bg-white text-sm shadow-sm"
                   placeholder="Password"
                   required 
                 />

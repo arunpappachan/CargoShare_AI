@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Ship, Mail, Lock, Building, Briefcase, ChevronRight, User, Globe, Eye, EyeOff, Phone, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 
 export default function Register() {
   const [role, setRole] = useState('exporter'); // 'exporter' or 'carrier'
@@ -19,6 +20,7 @@ export default function Register() {
   });
 
   const { register } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -29,15 +31,18 @@ export default function Register() {
     e.preventDefault();
     if (formData.password.length < 8) {
       setErrorMsg('Password must be at least 8 characters long.');
+      toast.warning('Password must be at least 8 characters long.');
       return;
     }
 
     if (!/^\d{10}$/.test(formData.phone)) {
       setErrorMsg('Phone number must be exactly 10 digits and only contain numbers.');
+      toast.warning('Phone number must be exactly 10 digits.');
       return;
     }
     if (formData.phone === '0000000000') {
       setErrorMsg('Phone number cannot be all zeros.');
+      toast.warning('Phone number cannot be all zeros.');
       return;
     }
 
@@ -50,6 +55,8 @@ export default function Register() {
         role,
       });
 
+      toast.success('Your CargoShare account was created successfully!', 'Welcome Aboard');
+
       // Redirect directly to the user's workspace dashboard
       if (role === 'carrier') {
         navigate('/dashboard/carrier');
@@ -57,7 +64,9 @@ export default function Register() {
         navigate('/dashboard/exporter');
       }
     } catch (err) {
-      setErrorMsg(err.message || 'Registration failed. Please try again.');
+      const msg = err.message || 'Registration failed. Please try again.';
+      setErrorMsg(msg);
+      toast.error(msg, 'Registration Error');
     } finally {
       setLoading(false);
     }
@@ -127,7 +136,7 @@ export default function Register() {
                     value={formData.companyName}
                     onChange={handleChange}
                     placeholder="e.g. Apex Exports Ltd."
-                    className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 outline-none transition-all bg-slate-50 focus:bg-white text-sm" 
+                    className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all duration-200 bg-slate-50 focus:bg-white text-sm shadow-sm" 
                     required 
                   />
                 </div>
@@ -145,7 +154,7 @@ export default function Register() {
                     value={formData.name}
                     onChange={handleChange}
                     placeholder="e.g. Rahul Sharma"
-                    className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 outline-none transition-all bg-slate-50 focus:bg-white text-sm" 
+                    className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all duration-200 bg-slate-50 focus:bg-white text-sm shadow-sm" 
                     required 
                   />
                 </div>
@@ -163,7 +172,7 @@ export default function Register() {
                     value={formData.phone}
                     onChange={handleChange}
                     placeholder="9876543210"
-                    className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 outline-none transition-all bg-slate-50 focus:bg-white text-sm" 
+                    className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all duration-200 bg-slate-50 focus:bg-white text-sm shadow-sm" 
                     required 
                   />
                 </div>
@@ -180,7 +189,7 @@ export default function Register() {
                       name="region"
                       value={formData.region}
                       onChange={handleChange}
-                      className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 outline-none transition-all bg-slate-50 focus:bg-white text-sm"
+                      className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all duration-200 bg-slate-50 focus:bg-white text-sm shadow-sm"
                     >
                       <option value="apac">Asia-Pacific (APAC)</option>
                       <option value="emea">Europe, Middle East, Africa (EMEA)</option>
@@ -206,7 +215,7 @@ export default function Register() {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="name@company.com"
-                  className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 outline-none transition-all bg-slate-50 focus:bg-white text-sm"
+                  className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all duration-200 bg-slate-50 focus:bg-white text-sm shadow-sm"
                   required 
                 />
               </div>
@@ -225,7 +234,7 @@ export default function Register() {
                   onChange={handleChange}
                   placeholder="At least 8 characters"
                   minLength="8"
-                  className="w-full pl-11 pr-12 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 outline-none transition-all bg-slate-50 focus:bg-white text-sm"
+                  className="w-full pl-11 pr-12 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all duration-200 bg-slate-50 focus:bg-white text-sm shadow-sm"
                   required 
                 />
                 <button 

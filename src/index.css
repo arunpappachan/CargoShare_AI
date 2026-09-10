@@ -21,6 +21,18 @@
     background-size: 400% 400%;
     animation: gradient-xy 15s ease infinite;
   }
+
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+
+  .input-focus-glow {
+    @apply transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-brand-500/20 focus:border-brand-500;
+  }
 }
 
 @keyframes gradient-xy {
@@ -32,5 +44,16 @@
   }
   100% {
     background-position: 0% 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

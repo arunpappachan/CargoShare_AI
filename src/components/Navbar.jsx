@@ -2,14 +2,17 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Ship, Globe, User, LogOut, ShieldCheck, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
+import MagneticButton from './common/MagneticButton';
 
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
-
+  const { toast } = useToast();
   const navigate = useNavigate();
 
   const handleSignOut = () => {
     logout();
+    toast.info('You have been signed out successfully.', 'Signed Out');
     navigate('/login');
   };
 
@@ -35,16 +38,35 @@ export default function Navbar() {
             </span>
           </Link>
 
-          {/* Navigation Links */}
+          {/* Navigation Links with animated sliding underline */}
           <div className="hidden md:flex items-center space-x-8">
-            <a href="/#features" className="text-sm font-medium text-slate-600 hover:text-brand-600 transition-colors">
-              Features
+            <a
+              href="/#features"
+              className="relative group py-1 text-sm font-medium text-slate-600 hover:text-brand-600 transition-colors"
+            >
+              <span>Features</span>
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-brand-600 transition-all duration-300 group-hover:w-full rounded-full" />
             </a>
-            <a href="/#how-it-works" className="text-sm font-medium text-slate-600 hover:text-brand-600 transition-colors">
-              How it Works
+            <a
+              href="/#how-it-works"
+              className="relative group py-1 text-sm font-medium text-slate-600 hover:text-brand-600 transition-colors"
+            >
+              <span>How it Works</span>
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-brand-600 transition-all duration-300 group-hover:w-full rounded-full" />
             </a>
-            <a href="/#about" className="text-sm font-medium text-slate-600 hover:text-brand-600 transition-colors">
-              About
+            <a
+              href="/#testimonials"
+              className="relative group py-1 text-sm font-medium text-slate-600 hover:text-brand-600 transition-colors"
+            >
+              <span>Testimonials</span>
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-brand-600 transition-all duration-300 group-hover:w-full rounded-full" />
+            </a>
+            <a
+              href="/#about"
+              className="relative group py-1 text-sm font-medium text-slate-600 hover:text-brand-600 transition-colors"
+            >
+              <span>About</span>
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-brand-600 transition-all duration-300 group-hover:w-full rounded-full" />
             </a>
           </div>
 
@@ -82,16 +104,16 @@ export default function Navbar() {
               <div className="flex items-center gap-3">
                 <Link 
                   to="/login" 
-                  className="text-sm font-medium text-slate-700 hover:text-brand-600 transition-colors"
+                  className="text-sm font-medium text-slate-700 hover:text-brand-600 transition-colors px-2 py-1"
                 >
                   Sign In
                 </Link>
-                <Link 
-                  to="/register" 
-                  className="text-sm font-medium bg-brand-600 text-white px-4 py-2 rounded-xl hover:bg-brand-700 hover:shadow-md transition-all duration-200"
+                <MagneticButton
+                  to="/register"
+                  className="text-sm font-medium bg-brand-600 text-white px-5 py-2.5 rounded-xl hover:bg-brand-700 shadow-sm shadow-brand-500/20"
                 >
                   Get Started
-                </Link>
+                </MagneticButton>
               </div>
             )}
 

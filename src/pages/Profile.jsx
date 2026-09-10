@@ -4,9 +4,11 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 
 export default function Profile() {
   const { user, logout, updateProfile } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
 
   const [isEditing, setIsEditing] = useState(false);
@@ -40,12 +42,16 @@ export default function Profile() {
     setAlert({ type: '', message: '' });
 
     if (!/^\d{10}$/.test(formData.phone)) {
-      setAlert({ type: 'error', message: 'Phone number must be exactly 10 digits and only contain numbers.' });
+      const msg = 'Phone number must be exactly 10 digits and only contain numbers.';
+      setAlert({ type: 'error', message: msg });
+      toast.warning(msg);
       setSaving(false);
       return;
     }
     if (formData.phone === '0000000000') {
-      setAlert({ type: 'error', message: 'Phone number cannot be all zeros.' });
+      const msg = 'Phone number cannot be all zeros.';
+      setAlert({ type: 'error', message: msg });
+      toast.warning(msg);
       setSaving(false);
       return;
     }
@@ -53,8 +59,11 @@ export default function Profile() {
       await updateProfile(formData);
       setIsEditing(false);
       setAlert({ type: 'success', message: 'Profile updated successfully!' });
+      toast.success('Your profile was updated successfully!');
     } catch (err) {
-      setAlert({ type: 'error', message: err.message || 'Failed to update profile.' });
+      const msg = err.message || 'Failed to update profile.';
+      setAlert({ type: 'error', message: msg });
+      toast.error(msg);
     } finally {
       setSaving(false);
     }
@@ -62,6 +71,7 @@ export default function Profile() {
 
   const handleSignOut = () => {
     logout();
+    toast.info('You have been signed out successfully.', 'Signed Out');
     navigate('/login');
   };
 
@@ -137,8 +147,8 @@ export default function Profile() {
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       disabled={!isEditing}
-                      className={`w-full pl-11 pr-4 py-3 rounded-xl border text-sm transition-all outline-none ${
-                        !isEditing ? 'border-slate-200 bg-slate-50 text-slate-600' : 'border-brand-500 bg-white focus:ring-2 focus:ring-brand-500'
+                      className={`w-full pl-11 pr-4 py-3 rounded-xl border text-sm transition-all duration-200 outline-none ${
+                        !isEditing ? 'border-slate-200 bg-slate-50 text-slate-600' : 'border-brand-500 bg-white focus:ring-4 focus:ring-brand-500/20 focus:border-brand-500 shadow-sm'
                       }`}
                       required
                     />
@@ -171,8 +181,8 @@ export default function Profile() {
                       value={formData.companyName}
                       onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
                       disabled={!isEditing}
-                      className={`w-full pl-11 pr-4 py-3 rounded-xl border text-sm transition-all outline-none ${
-                        !isEditing ? 'border-slate-200 bg-slate-50 text-slate-600' : 'border-brand-500 bg-white focus:ring-2 focus:ring-brand-500'
+                      className={`w-full pl-11 pr-4 py-3 rounded-xl border text-sm transition-all duration-200 outline-none ${
+                        !isEditing ? 'border-slate-200 bg-slate-50 text-slate-600' : 'border-brand-500 bg-white focus:ring-4 focus:ring-brand-500/20 focus:border-brand-500 shadow-sm'
                       }`}
                     />
                   </div>
@@ -189,8 +199,8 @@ export default function Profile() {
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       disabled={!isEditing}
-                      className={`w-full pl-11 pr-4 py-3 rounded-xl border text-sm transition-all outline-none ${
-                        !isEditing ? 'border-slate-200 bg-slate-50 text-slate-600' : 'border-brand-500 bg-white focus:ring-2 focus:ring-brand-500'
+                      className={`w-full pl-11 pr-4 py-3 rounded-xl border text-sm transition-all duration-200 outline-none ${
+                        !isEditing ? 'border-slate-200 bg-slate-50 text-slate-600' : 'border-brand-500 bg-white focus:ring-4 focus:ring-brand-500/20 focus:border-brand-500 shadow-sm'
                       }`}
                     />
                   </div>

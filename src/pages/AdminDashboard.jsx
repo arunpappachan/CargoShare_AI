@@ -1,20 +1,34 @@
 import React, { useState } from 'react';
-import { Search, List, Users, Ship, LogOut, FileText, Settings, Activity, ShieldCheck, Box, BookOpen, AlertTriangle, DollarSign, BarChart2, ClipboardList } from 'lucide-react';
+import { Search, List, Users, Ship, LogOut, FileText, Settings, Activity, ShieldCheck, Box, BookOpen, AlertTriangle, DollarSign, BarChart2, ClipboardList, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import BookingManager from '../components/admin/BookingManager';
 import FraudManager from '../components/admin/FraudManager';
 import CommissionManager from '../components/admin/CommissionManager';
-
 import ReportsManager from '../components/admin/ReportsManager';
 import SettingsManager from '../components/admin/SettingsManager';
 import ExporterManager from '../components/admin/ExporterManager';
 import CarrierManager from '../components/admin/CarrierManager';
+import SidebarNav from '../components/common/SidebarNav';
+import { useToast } from '../context/ToastContext';
+
+const ADMIN_NAV_ITEMS = [
+  { id: 'overview', label: 'System Overview', icon: Activity },
+  { id: 'exporters', label: 'Exporters (SMEs)', icon: Users },
+  { id: 'carriers', label: 'Shipping Carriers', icon: Ship },
+  { id: 'bookings', label: 'Booking Mgmt', icon: BookOpen, badge: 12 },
+  { id: 'fraud', label: 'Fraud Detection', icon: AlertTriangle, badge: 'Active' },
+  { id: 'commission', label: 'Commission Mgmt', icon: DollarSign },
+  { id: 'reports', label: 'Reports & Analytics', icon: BarChart2 },
+  { id: 'settings', label: 'Settings', icon: Settings },
+];
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
+  const { toast } = useToast();
   const navigate = useNavigate();
 
   const handleLogout = () => {
+    toast.info('Signed out of Administrator Console.', 'Signed Out');
     navigate('/login');
   };
 
@@ -37,65 +51,14 @@ export default function AdminDashboard() {
           </Link>
         </div>
 
-        <nav className="flex-1 px-4 py-8 space-y-3 relative z-10">
-          <button 
-            onClick={() => setActiveTab('overview')}
-            className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium ${activeTab === 'overview' ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg shadow-purple-500/25 border border-purple-400/30' : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'}`}
-          >
-            <Activity className="w-5 h-5" /> System Overview
-          </button>
-          
-          <button 
-            onClick={() => setActiveTab('exporters')}
-            className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium ${activeTab === 'exporters' ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg shadow-purple-500/25 border border-purple-400/30' : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'}`}
-          >
-            <Users className="w-5 h-5" /> Exporters (SMEs)
-          </button>
-
-          <button 
-            onClick={() => setActiveTab('carriers')}
-            className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium ${activeTab === 'carriers' ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg shadow-purple-500/25 border border-purple-400/30' : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'}`}
-          >
-            <Ship className="w-5 h-5" /> Shipping Carriers
-          </button>
-
-          <button 
-            onClick={() => setActiveTab('bookings')}
-            className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium ${activeTab === 'bookings' ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg shadow-purple-500/25 border border-purple-400/30' : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'}`}
-          >
-            <BookOpen className="w-5 h-5" /> Booking Management
-          </button>
-
-          <button 
-            onClick={() => setActiveTab('fraud')}
-            className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium ${activeTab === 'fraud' ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg shadow-purple-500/25 border border-purple-400/30' : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'}`}
-          >
-            <AlertTriangle className="w-5 h-5" /> Fraud Detection
-          </button>
-
-          <button 
-            onClick={() => setActiveTab('commission')}
-            className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium ${activeTab === 'commission' ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg shadow-purple-500/25 border border-purple-400/30' : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'}`}
-          >
-            <DollarSign className="w-5 h-5" /> Commission Mgmt
-          </button>
-
-          <button 
-            onClick={() => setActiveTab('reports')}
-            className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium ${activeTab === 'reports' ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg shadow-purple-500/25 border border-purple-400/30' : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'}`}
-          >
-            <BarChart2 className="w-5 h-5" /> Reports & Analytics
-          </button>
-
-
-
-          <button 
-            onClick={() => setActiveTab('settings')}
-            className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-medium ${activeTab === 'settings' ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg shadow-purple-500/25 border border-purple-400/30' : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'}`}
-          >
-            <Settings className="w-5 h-5" /> Settings
-          </button>
-        </nav>
+        {/* Sliding Pill Sidebar Navigation */}
+        <SidebarNav
+          items={ADMIN_NAV_ITEMS}
+          activeId={activeTab}
+          onChange={setActiveTab}
+          accent="admin"
+          className="z-10"
+        />
 
         <div className="p-4 border-t border-slate-800/50 relative z-10">
           <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl hover:bg-red-500/10 hover:text-red-400 text-slate-400 transition-all font-medium">
@@ -107,6 +70,53 @@ export default function AdminDashboard() {
       {/* Main Content Area */}
       <main className="flex-1 ml-64 p-8 relative z-10 min-h-screen">
         <div className="max-w-6xl mx-auto">
+          
+          {/* Top Admin KPI Strip */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Registered Shippers</p>
+                <p className="text-2xl font-extrabold text-slate-900 mt-0.5">142 SMEs</p>
+                <p className="text-[11px] text-purple-600 font-bold mt-0.5">+18 this month</p>
+              </div>
+              <div className="p-3 rounded-xl bg-purple-50 text-purple-600">
+                <Users className="w-5 h-5" />
+              </div>
+            </div>
+
+            <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Partner Carriers</p>
+                <p className="text-2xl font-extrabold text-slate-900 mt-0.5">18 Lines</p>
+                <p className="text-[11px] text-blue-600 font-medium mt-0.5">100% verified KYC</p>
+              </div>
+              <div className="p-3 rounded-xl bg-blue-50 text-blue-600">
+                <Ship className="w-5 h-5" />
+              </div>
+            </div>
+
+            <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Platform GMV</p>
+                <p className="text-2xl font-extrabold text-slate-900 mt-0.5">$284.5K</p>
+                <p className="text-[11px] text-emerald-600 font-bold mt-0.5">+22% month-over-month</p>
+              </div>
+              <div className="p-3 rounded-xl bg-emerald-50 text-emerald-600">
+                <DollarSign className="w-5 h-5" />
+              </div>
+            </div>
+
+            <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Security State</p>
+                <p className="text-2xl font-extrabold text-emerald-600 mt-0.5">Protected</p>
+                <p className="text-[11px] text-slate-500 font-medium mt-0.5">Zero active risk alerts</p>
+              </div>
+              <div className="p-3 rounded-xl bg-emerald-50 text-emerald-600">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+            </div>
+          </div>
           
           {activeTab === 'overview' && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">

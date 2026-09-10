@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { FileText, CheckCircle, XCircle, Loader2, MessageCircle } from 'lucide-react';
+import ChatWidget from '../ChatWidget';
 
 export default function BookingRequests() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeChatBooking, setActiveChatBooking] = useState(null);
 
   useEffect(() => {
     fetchBookings();
@@ -81,6 +83,9 @@ export default function BookingRequests() {
                   <td className="px-6 py-4 text-right">
                     {req.status === 'Pending Confirmation' ? (
                       <div className="flex justify-end gap-2">
+                        <button onClick={() => setActiveChatBooking(req)} className="p-2 text-indigo-500 hover:bg-indigo-50 hover:text-indigo-600 rounded-lg transition-colors" title="Chat/Negotiate">
+                          <MessageCircle className="w-6 h-6" />
+                        </button>
                         <button onClick={() => handleAction(req.id, 'Rejected')} className="p-2 text-red-500 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors" title="Reject">
                           <XCircle className="w-6 h-6" />
                         </button>
@@ -89,9 +94,14 @@ export default function BookingRequests() {
                         </button>
                       </div>
                     ) : (
-                      <span className={`px-3 py-1 text-xs font-bold rounded-full ${req.status === 'Approved' || req.status === 'Accepted' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-red-100 text-red-700 border border-red-200'}`}>
-                        {req.status}
-                      </span>
+                      <div className="flex justify-end gap-2 items-center">
+                        <button onClick={() => setActiveChatBooking(req)} className="p-2 text-indigo-500 hover:bg-indigo-50 hover:text-indigo-600 rounded-lg transition-colors" title="Chat/Negotiate">
+                          <MessageCircle className="w-5 h-5" />
+                        </button>
+                        <span className={`px-3 py-1 text-xs font-bold rounded-full ${req.status === 'Approved' || req.status === 'Accepted' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-red-100 text-red-700 border border-red-200'}`}>
+                          {req.status}
+                        </span>
+                      </div>
                     )}
                   </td>
                 </tr>
@@ -105,6 +115,15 @@ export default function BookingRequests() {
           </table>
         </div>
       </div>
+
+      {/* Chat Widget Modal */}
+      {activeChatBooking && (
+        <ChatWidget 
+          booking={activeChatBooking}
+          currentUser={{ name: 'Captain Maersk', role: 'carrier' }}
+          onClose={() => setActiveChatBooking(null)}
+        />
+      )}
     </div>
   );
 }

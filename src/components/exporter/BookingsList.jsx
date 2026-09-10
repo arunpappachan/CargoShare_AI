@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { PackageSearch, Map, Clock, FileText, CheckCircle, Navigation, Anchor, Truck } from 'lucide-react';
+import { PackageSearch, Map, Clock, FileText, CheckCircle, Navigation, Anchor, Truck, MessageCircle } from 'lucide-react';
+import ChatWidget from '../ChatWidget';
 
 export default function BookingsList() {
   const [activeTab, setActiveTab] = useState('active');
   const [trackingModal, setTrackingModal] = useState(null);
+  const [activeChatBooking, setActiveChatBooking] = useState(null);
   const [activeBookings, setActiveBookings] = useState([]);
   const [pastBookings, setPastBookings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -90,6 +92,9 @@ export default function BookingsList() {
                             <Map className="w-4 h-4" /> Track
                           </button>
                         )}
+                        <button onClick={() => setActiveChatBooking(booking)} className="px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition-colors font-medium text-sm flex items-center gap-2">
+                          <MessageCircle className="w-4 h-4" /> Chat
+                        </button>
                     </div>
                   </td>
                 </tr>
@@ -211,6 +216,15 @@ export default function BookingsList() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Chat Widget Modal */}
+      {activeChatBooking && (
+        <ChatWidget 
+          booking={activeChatBooking}
+          currentUser={{ name: 'John Exporter', role: 'exporter' }}
+          onClose={() => setActiveChatBooking(null)}
+        />
       )}
     </div>
   );

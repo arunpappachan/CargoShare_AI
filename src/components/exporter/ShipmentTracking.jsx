@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Map, Search, MapPin, Truck, Anchor, CheckCircle, Navigation } from 'lucide-react';
+import { Map, Search, MapPin, Truck, Anchor, CheckCircle, Navigation, XCircle } from 'lucide-react';
 
 export default function ShipmentTracking() {
   const [trackingId, setTrackingId] = useState('');
@@ -22,11 +22,39 @@ export default function ShipmentTracking() {
         const booking = data.data.find(b => b.id.toUpperCase() === trackingId.toUpperCase());
         
         if (booking) {
-          // Calculate a mock ETA based on the booking date (add 4 days for demo purposes)
+          // Calculate a mock ETA based on the booking date (add 7 days for demo purposes)
           const departureDate = new Date(booking.date || booking.createdAt);
           const etaDate = new Date(departureDate);
-          etaDate.setDate(etaDate.getDate() + 4);
+          etaDate.setDate(etaDate.getDate() + 7);
           
+          let s1 = 'completed';
+          let s2 = 'pending';
+          let s3 = 'pending';
+          let s4 = 'pending';
+
+          switch(booking.status) {
+            case 'Pending Confirmation':
+              s2 = 'current';
+              break;
+            case 'Accepted':
+              s2 = 'completed';
+              s3 = 'current';
+              break;
+            case 'In Transit':
+              s2 = 'completed';
+              s3 = 'completed';
+              s4 = 'current';
+              break;
+            case 'Delivered':
+              s2 = 'completed';
+              s3 = 'completed';
+              s4 = 'completed';
+              break;
+            case 'Rejected':
+              s2 = 'rejected';
+              break;
+          }
+
           setTrackingData({
             id: booking.id,
             route: booking.route,
@@ -39,10 +67,10 @@ export default function ShipmentTracking() {
             vessel: 'Oceanic Explorer', // Static for demo
             departure: booking.date || departureDate.toISOString().split('T')[0],
             updates: [
-              { status: 'completed', event: 'Booking Placed', location: 'System', time: new Date(booking.createdAt).toLocaleString() },
-              { status: booking.status === 'Approved' ? 'completed' : 'current', event: 'Carrier Confirmation', location: 'System', time: 'Pending', details: `Current Status: ${booking.status}` },
-              { status: 'pending', event: 'Vessel Departed', location: 'Oceanic Explorer', time: 'TBD', details: 'Awaiting departure' },
-              { status: 'pending', event: 'Arrival at Destination', location: 'Destination Port', time: `Estimated: ${etaDate.toISOString().split('T')[0]}` }
+              { status: s1, event: 'Booking Placed', location: 'System', time: new Date(booking.createdAt).toLocaleString() },
+              { status: s2, event: 'Carrier Confirmation', location: 'System', time: s2 === 'pending' ? 'TBD' : (s2 === 'current' ? 'Pending' : 'Confirmed'), details: `Current Status: ${booking.status}` },
+              { status: s3, event: 'Vessel Departed', location: 'Oceanic Explorer', time: s3 === 'pending' ? 'TBD' : (s3 === 'current' ? 'In Transit' : 'Departed'), details: s3 === 'pending' ? 'Awaiting departure' : 'Vessel is on the way' },
+              { status: s4, event: 'Arrival at Destination', location: 'Destination Port', time: s4 === 'completed' ? 'Delivered' : `Estimated: ${etaDate.toISOString().split('T')[0]}` }
             ]
           });
         } else {
@@ -150,11 +178,13 @@ export default function ShipmentTracking() {
                     <div className={`absolute -left-[17px] top-0 w-8 h-8 rounded-full border-2 flex items-center justify-center z-10 
                       ${update.status === 'completed' ? 'bg-emerald-100 border-emerald-500 text-emerald-600' : 
                         update.status === 'current' ? 'bg-brand-100 border-brand-500 text-brand-600 animate-pulse' : 
+                        update.status === 'rejected' ? 'bg-red-100 border-red-500 text-red-600' :
                         'bg-white border-slate-200 text-slate-300'}`}
                     >
                       {update.status === 'completed' && <CheckCircle className="w-4 h-4" />}
                       {update.status === 'current' && <Anchor className="w-4 h-4" />}
                       {update.status === 'pending' && <Truck className="w-4 h-4" />}
+                      {update.status === 'rejected' && <XCircle className="w-4 h-4" />}
                     </div>
                     
                     <h4 className={`font-bold text-lg ${update.status === 'pending' ? 'text-slate-400' : 'text-slate-900'}`}>
