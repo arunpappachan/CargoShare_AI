@@ -75,8 +75,14 @@ let fallbackBookings = [
   }
 ];
 
+let fallbackDocuments = [
+  { docId: 'INV-1029', bookingId: 'CS-1001', type: 'Commercial Invoice', status: 'Verified', date: 'Oct 24, 2026', fileName: 'invoice_1029.pdf' },
+  { docId: 'PL-8821', bookingId: 'CS-1001', type: 'Packing List', status: 'Pending Review', date: 'Oct 24, 2026', fileName: 'packing_list.pdf' },
+];
+
 let spaceIdCounter = 5003;
 let bookingIdCounter = 1002;
+let docIdCounter = 1000;
 
 // Check if MongoDB is connected
 const isMongoConnected = () => mongoose.connection.readyState === 1;
@@ -343,6 +349,61 @@ app.patch('/api/bookings/:id/status', async (req, res) => {
 
     fallbackBookings[bookingIndex].status = status;
     res.json({ status: 'success', source: 'memory_fallback', data: fallbackBookings[bookingIndex] });
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+});
+
+// --- DOCUMENTS API ---
+
+// GET Documents (optionally filter by bookingId)
+app.get('/api/documents', async (req, res) => {
+  try {
+    const { bookingId } = req.query;
+    if (isMongoConnected()) {
+      let filter = {};
+      if (bookingId) filter.bookingId = bookingId;
+      const data = await Document.find(filter).sort({ createdAt: -1 });
+      return res.json({ status: 'success', source: 'mongodb', data });
+    }
+    
+    let filteredDocs = fallbackDocuments;
+    if (bookingId) filteredDocs = filteredDocs.filter(d => d.bookingId === bookingId);
+    res.json({ status: 'success', source: 'memory_fallback', data: filteredDocs });
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+});
+
+// POST Document
+app.post('/api/documents', async (req, res) => {
+  try {
+    const { bookingId, type, fileName } = req.body;
+    
+    if (!type || !fileName) {
+      return res.status(400).json({ status: 'error', message: 'Missing required fields' });
+    }
+
+    const newDocId = `DOC-${docIdCounter++}`;
+    const newDocData = {
+      docId: newDocId,
+      bookingId: bookingId || null,
+      type,
+      fileName,
+      status: 'Pending Review',
+      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      createdAt: new Date()
+    };
+
+    if (isMongoConnected()) {
+      const savedDoc = await Document.create(newDocData);
+      console.log(`[MongoDB] New document saved: ${savedDoc.docId}`);
+      return res.status(201).json({ status: 'success', source: 'mongodb', data: savedDoc });
+    }
+
+    fallbackDocuments.push(newDocData);
+    console.log(`[Memory] New document saved: ${newDocData.docId}`);
+    res.status(201).json({ status: 'success', source: 'memory_fallback', data: newDocData });
   } catch (error) {
     res.status(500).json({ status: 'error', message: error.message });
   }

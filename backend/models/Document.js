@@ -6,6 +6,11 @@ const documentSchema = new mongoose.Schema({
     unique: true,
     index: true,
   },
+  bookingId: {
+    type: String,
+    required: false,
+    index: true,
+  },
   type: {
     type: String,
     required: true,

@@ -128,7 +128,7 @@ export default function DocumentManagement() {
                     <span className={`px-3 py-1 text-xs font-bold rounded-full border ${getStatusColor(doc.status)}`}>
                       {doc.status}
                     </span>
-                    <button className="text-slate-400 hover:text-brand-600 transition-colors opacity-0 group-hover:opacity-100">
+                    <button className="text-slate-400 hover:text-brand-600 transition-colors">
                       <Download className="w-5 h-5" />
                     </button>
                   </div>

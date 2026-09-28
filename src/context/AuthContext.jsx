@@ -53,11 +53,16 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (email, password, role) => {
-    const res = await fetch(`${API_BASE}/api/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password, role }),
-    });
+    let res;
+    try {
+      res = await fetch(`${API_BASE}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, role }),
+      });
+    } catch (networkErr) {
+      throw new Error(`Unable to connect to backend server at ${API_BASE}. Please make sure the backend is running.`);
+    }
 
     const data = await res.json();
 
@@ -69,8 +74,6 @@ export const AuthProvider = ({ children }) => {
     setUser(data.user);
     localStorage.setItem('cargoshare_token', data.token);
     localStorage.setItem('cargoshare_user', JSON.stringify(data.user));
-
-
 
     return data;
   };

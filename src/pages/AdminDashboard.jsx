@@ -11,6 +11,7 @@ import CarrierManager from '../components/admin/CarrierManager';
 import SidebarNav from '../components/common/SidebarNav';
 import CountUp from '../components/common/CountUp';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
 
 const ADMIN_NAV_ITEMS = [
   { key: 'overview', id: 'overview', label: 'System Overview', icon: Activity },
@@ -27,12 +28,24 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
   const { showToast } = useToast();
   const navigate = useNavigate();
+  const { user, isAuthenticated, loading } = useAuth();
+
+  React.useEffect(() => {
+    if (!loading && (!isAuthenticated || user?.role !== 'admin')) {
+      showToast('Access denied. Admin privileges required.', 'error');
+      navigate('/login');
+    }
+  }, [loading, isAuthenticated, user, navigate, showToast]);
 
   const handleLogout = () => {
     // Can be extended to fraud alerts, user approvals, and commission notifications
     showToast('Signed out of Administrator Console', 'info');
     navigate('/login');
   };
+
+  if (loading || !isAuthenticated || user?.role !== 'admin') {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 flex font-sans relative overflow-hidden">

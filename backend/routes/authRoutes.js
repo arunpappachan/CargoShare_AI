@@ -23,7 +23,11 @@ router.post('/register', async (req, res) => {
     const validRoles = ['exporter', 'carrier'];
     const assignedRole = validRoles.includes(role) ? role : 'exporter';
 
-    // Removed unique constraint check to allow the same email for multiple accounts
+    // Check if email already exists
+    const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
+    if (existingUser) {
+      return res.status(400).json({ status: 'error', message: 'Email is already registered. Please log in.' });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new User({
@@ -67,16 +71,16 @@ router.post('/login', async (req, res) => {
   const role = req.body.role; // Optional, defaults if not provided
 
   try {
-    let user = await User.findOne({ email, role: 'admin' });
-    
-    if (!user && role) {
-      user = await User.findOne({ email, role });
-    } else if (!user) {
-      user = await User.findOne({ email });
-    }
+    let user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(401).json({ status: 'error', message: 'Invalid email address, password, or role.' });
+      return res.status(401).json({ status: 'error', message: 'Invalid email address or password.' });
+    }
+
+    if (role && user.role !== role) {
+      if (role === 'admin' && user.role !== 'admin') {
+        return res.status(403).json({ status: 'error', message: 'Access denied. This account does not have Administrator privileges.' });
+      }
     }
 
     const isMatch = await bcrypt.compare(password, user.password);

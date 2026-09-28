@@ -9,6 +9,7 @@ import Profile from './Profile';
 import SidebarNav from '../components/common/SidebarNav';
 import CountUp from '../components/common/CountUp';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
 
 const NAV_ITEMS = [
   { key: 'search', id: 'search', label: 'Search Space', icon: Search },
@@ -22,12 +23,24 @@ export default function ExporterDashboard() {
   const [activeTab, setActiveTab] = useState('search');
   const { showToast } = useToast();
   const navigate = useNavigate();
+  const { user, isAuthenticated, loading } = useAuth();
+
+  React.useEffect(() => {
+    if (!loading && (!isAuthenticated || user?.role !== 'exporter')) {
+      showToast('Access denied. Please log in as an exporter.', 'error');
+      navigate('/login');
+    }
+  }, [loading, isAuthenticated, user, navigate, showToast]);
 
   const handleLogout = () => {
     // Can be extended to booking status changes and customs document notifications
     showToast('Signed out of Exporter Portal', 'info');
     navigate('/login');
   };
+
+  if (loading || !isAuthenticated || user?.role !== 'exporter') {
+    return null; // or a loading spinner
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 flex font-sans relative overflow-hidden">

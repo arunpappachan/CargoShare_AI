@@ -7,6 +7,7 @@ import BookingRequests from '../components/carrier/BookingRequests';
 import SidebarNav from '../components/common/SidebarNav';
 import CountUp from '../components/common/CountUp';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
 
 const CARRIER_NAV_ITEMS = [
   { key: 'overview', id: 'overview', label: 'Fleet Overview', icon: LayoutDashboard },
@@ -19,6 +20,14 @@ export default function ShippingDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
   const { showToast } = useToast();
   const navigate = useNavigate();
+  const { user, isAuthenticated, loading } = useAuth();
+
+  React.useEffect(() => {
+    if (!loading && (!isAuthenticated || user?.role !== 'carrier')) {
+      showToast('Access denied. Please log in as a carrier.', 'error');
+      navigate('/login');
+    }
+  }, [loading, isAuthenticated, user, navigate, showToast]);
 
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [profileData, setProfileData] = useState({
@@ -27,6 +36,10 @@ export default function ShippingDashboard() {
     email: 'operations@oceanicfreight.com',
     phone: '+1 (555) 123-4567'
   });
+
+  if (loading || !isAuthenticated || user?.role !== 'carrier') {
+    return null;
+  }
 
   const handleLogout = () => {
     // Can be extended to booking approvals and schedule update alerts
