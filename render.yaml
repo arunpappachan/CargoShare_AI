@@ -13,7 +13,7 @@ services:
   # ---------------------------------------------------------
   - type: web
     name: cargoshare-backend
-    env: node
+    runtime: node
     plan: free
     rootDir: backend
     buildCommand: npm install
@@ -36,15 +36,18 @@ services:
   # ---------------------------------------------------------
   # 2. Frontend Static Site (Vite + React SPA)
   # ---------------------------------------------------------
-  - type: static
+  - type: web
     name: cargoshare-frontend
-    plan: free
+    runtime: static
     buildCommand: npm install && npm run build
-    staticPublishPath: ./dist
+    publishPath: ./dist
     routes:
       - type: rewrite
         source: /*
         destination: /index.html
+      - type: rewrite
+        source: /assets/*
+        destination: /assets/*
     envVars:
       - key: VITE_API_URL
         sync: false # Set to your backend URL (e.g. https://cargoshare-backend.onrender.com)
