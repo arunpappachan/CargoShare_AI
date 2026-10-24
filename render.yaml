@@ -45,9 +45,6 @@ services:
       - type: rewrite
         source: /*
         destination: /index.html
-      - type: rewrite
-        source: /assets/*
-        destination: /assets/*
     envVars:
       - key: VITE_API_URL
         sync: false # Set to your backend URL (e.g. https://cargoshare-backend.onrender.com)
