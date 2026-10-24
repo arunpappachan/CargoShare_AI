@@ -1,7 +1,6 @@
 require('dotenv').config();
-const mongoose = require('mongoose');
 const User = require('./models/User');
-const connectMongoDB = require('./config/db');
+const { initPostgresTables } = require('./config/postgres');
 const http = require('http');
 
 const PORT = 5000;
@@ -45,7 +44,7 @@ async function runAuthTests() {
   console.log('🚀 CargoShare AI - Base Auth Test Suite');
   console.log('====================================================\n');
 
-  await connectMongoDB();
+  await initPostgresTables();
   const testServer = await ensureServerRunning();
 
   try {

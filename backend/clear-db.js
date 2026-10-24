@@ -1,32 +1,20 @@
 require('dotenv').config();
-const mongoose = require('mongoose');
-
-const Space = require('./models/Space');
-const Booking = require('./models/Booking');
-const User = require('./models/User');
-
-const mongoURI = process.env.MONGO_URI || 'mongodb://localhost:27017/cargoshare';
+const { query, initPostgresTables, isPostgresConnected } = require('./config/postgres');
 
 async function clearDB() {
   try {
-    await mongoose.connect(mongoURI);
-    console.log('Connected to MongoDB');
-    
-    await Space.deleteMany({});
-    console.log('Cleared spaces collection');
-    
-    await Booking.deleteMany({});
-    console.log('Cleared bookings collection');
-    
-    // Clear users too if they want full reset, but maybe it's safer to clear everything
-    await User.deleteMany({});
-    console.log('Cleared users collection');
-    
-    console.log('Database entries cleared.');
+    await initPostgresTables();
+    if (!isPostgresConnected()) {
+      console.log('PostgreSQL not connected.');
+      return;
+    }
+
+    await query('TRUNCATE TABLE messages, documents, bookings, spaces, users CASCADE');
+    console.log('Cleared all PostgreSQL tables (messages, documents, bookings, spaces, users).');
   } catch (err) {
-    console.error('Error clearing database:', err);
+    console.error('Error clearing database:', err.message);
   } finally {
-    await mongoose.disconnect();
+    process.exit(0);
   }
 }
 

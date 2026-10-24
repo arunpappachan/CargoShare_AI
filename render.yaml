@@ -1,6 +1,15 @@
+databases:
+  # ---------------------------------------------------------
+  # PostgreSQL Database (Free Managed Database on Render)
+  # ---------------------------------------------------------
+  - name: cargoshare-db
+    databaseName: cargoshare
+    user: cargoshare_user
+    plan: free
+
 services:
   # ---------------------------------------------------------
-  # 1. Backend Web Service (Node.js + Express + Socket.io)
+  # 1. Backend Web Service (Node.js + Express + PostgreSQL)
   # ---------------------------------------------------------
   - type: web
     name: cargoshare-backend
@@ -18,11 +27,11 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: FRONTEND_URL
-        sync: false # Set to your deployed frontend URL (e.g. https://cargoshare-frontend.onrender.com)
-      - key: MONGO_URI
-        sync: false # Set your MongoDB Atlas connection URI in Render Dashboard
+        sync: false # Set to your frontend URL (e.g. https://cargoshare-frontend.onrender.com)
       - key: DATABASE_URL
-        sync: false # Optional: PostgreSQL connection URI (e.g. Render Postgres)
+        fromDatabase:
+          name: cargoshare-db
+          property: connectionString
 
   # ---------------------------------------------------------
   # 2. Frontend Static Site (Vite + React SPA)

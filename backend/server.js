@@ -1,12 +1,9 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const mongoose = require('mongoose');
-
 const bcrypt = require('bcrypt');
 
-const connectMongoDB = require('./config/db');
-const { connectPostgres } = require('./config/postgres');
+const { initPostgresTables, isPostgresConnected } = require('./config/postgres');
 
 const Space = require('./models/Space');
 const Booking = require('./models/Booking');
@@ -204,24 +201,25 @@ let spaceIdCounter = 5003;
 let bookingIdCounter = 1002;
 let docIdCounter = 1000;
 
-// Check if MongoDB is connected
-const isMongoConnected = () => mongoose.connection.readyState === 1;
+// Check if PostgreSQL is connected (aliased to isMongoConnected for route compatibility)
+const isDbConnected = () => isPostgresConnected();
+const isMongoConnected = isDbConnected;
 
-// Seed initial sample data to MongoDB if empty
+// Seed initial sample data to PostgreSQL if empty
 const seedInitialData = async () => {
   try {
-    if (!isMongoConnected()) return;
+    if (!isDbConnected()) return;
 
     const spacesCount = await Space.countDocuments();
     if (spacesCount === 0) {
       await Space.insertMany(fallbackSpaces);
-      console.log('[MongoDB] Initial sample spaces seeded.');
+      console.log('[PostgreSQL] Initial sample spaces seeded.');
     }
 
     const bookingsCount = await Booking.countDocuments();
     if (bookingsCount === 0) {
       await Booking.insertMany(fallbackBookings);
-      console.log('[MongoDB] Initial sample bookings seeded.');
+      console.log('[PostgreSQL] Initial sample bookings seeded.');
     }
 
     const usersCount = await User.countDocuments();
@@ -237,10 +235,7 @@ const seedInitialData = async () => {
           role: 'admin',
           companyName: 'CargoShare AI Admin HQ',
           phone: '+1 555-0100',
-          status: 'Active',
-          emailVerified: true,
-          phoneVerified: true,
-          languagePreference: 'en',
+          region: 'Global',
         },
         {
           name: 'John Exporter',
@@ -249,10 +244,7 @@ const seedInitialData = async () => {
           role: 'exporter',
           companyName: 'Global Exports SME',
           phone: '+1 555-0101',
-          status: 'Active',
-          emailVerified: true,
-          phoneVerified: true,
-          languagePreference: 'en',
+          region: 'India - Western Region',
         },
         {
           name: 'Captain Maersk',
@@ -261,16 +253,13 @@ const seedInitialData = async () => {
           role: 'carrier',
           companyName: 'Oceanic Freight Ltd.',
           phone: '+1 555-0102',
-          status: 'Active',
-          emailVerified: true,
-          phoneVerified: false,
-          languagePreference: 'en',
+          region: 'Global Maritime',
         },
       ]);
-      console.log('[MongoDB] Initial sample users seeded (admin, exporter, carrier).');
+      console.log('[PostgreSQL] Initial demo users seeded (admin, exporter, carrier).');
     }
   } catch (err) {
-    console.error('[MongoDB] Seeding error:', err.message);
+    console.error('[PostgreSQL] Seeding error:', err.message);
   }
 };
 
@@ -279,9 +268,10 @@ const seedInitialData = async () => {
 // Welcome Route
 app.get('/', (req, res) => {
   res.json({
-    message: 'Welcome to the CargoShare AI Backend API!',
-    databases: {
-      mongodb: isMongoConnected() ? 'Connected' : 'Disconnected (Fallback active)',
+    message: 'Welcome to the CargoShare AI Backend API (PostgreSQL)!',
+    database: {
+      engine: 'PostgreSQL',
+      status: isDbConnected() ? 'Connected' : 'Disconnected (Fallback active)',
     },
     version: '1.0.0'
   });
@@ -292,12 +282,10 @@ app.get('/api/health', (req, res) => {
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
-    databases: {
-      mongodb: {
-        status: isMongoConnected() ? 'connected' : 'disconnected',
-        host: mongoose.connection.host || null,
-        name: mongoose.connection.name || null
-      }
+    database: {
+      type: 'postgresql',
+      status: isDbConnected() ? 'connected' : 'memory_fallback',
+      engine: 'PostgreSQL'
     }
   });
 });
@@ -668,14 +656,9 @@ const startServer = async () => {
   console.log('Starting CargoShare AI Backend Services...');
   console.log('--------------------------------------------------');
 
-  // Attempt database connections
-  await connectMongoDB();
+  // Initialize PostgreSQL database and seed sample data
+  await initPostgresTables();
   await seedInitialData();
-
-  // Attempt Postgres connection pool check (optional)
-  if (process.env.PG_HOST || process.env.DATABASE_URL) {
-    connectPostgres().catch(() => {});
-  }
 
   const server = require('http').createServer(app);
   const { Server } = require('socket.io');
