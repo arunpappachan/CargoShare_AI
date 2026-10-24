@@ -1,167 +1,517 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, X, Check, Users, ShieldAlert, CheckCircle, Ban, AlertTriangle, ShieldCheck, Mail, Phone } from 'lucide-react';
+import { 
+  X, 
+  Check, 
+  Users, 
+  ShieldAlert, 
+  CheckCircle, 
+  Ban, 
+  AlertTriangle, 
+  ShieldCheck, 
+  Mail, 
+  Search, 
+  Building2, 
+  Package, 
+  IndianRupee, 
+  Eye, 
+  ExternalLink, 
+  RefreshCw, 
+  CheckCircle2, 
+  ArrowRight,
+  Sparkles,
+  Plus
+} from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { API_BASE } from '../../lib/apiConfig';
+import { autoSyncAllBookingsToAdmin } from '../../lib/syncAdminData';
 
-export default function ExporterManager() {
+export default function ExporterManager({ onSelectBooking }) {
   const { token } = useAuth();
-  const [exporters, setExporters] = useState([
-    { id: 'EXP-101', name: 'Global Exports Inc.', email: 'exporter@cargoshare.ai', bookings: 12 },
-    { id: 'EXP-102', name: 'Sunrise Traders', email: 'hello@sunrisetraders.co', bookings: 5 },
-    { id: 'EXP-103', name: 'TechFreight SME', email: 'logistics@techfreight.com', bookings: 0 },
-    { id: 'EXP-104', name: 'Organic Foods Co.', email: 'ship@organicfoods.com', bookings: 34 },
-  ]);
 
-  const [loading, setLoading] = useState(false);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const [alert, setAlert] = useState('');
-  
-  const [formData, setFormData] = useState({
-    name: '', email: '', bookings: 0
+  const [exporters, setExporters] = useState(() => {
+    try {
+      const saved = localStorage.getItem('cargoshare_exporters');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
   });
 
+  const [allBookings, setAllBookings] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedExporterForBookings, setSelectedExporterForBookings] = useState(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [toastMsg, setToastMsg] = useState('');
+
+  // Blank form for manual entry (No demo pre-fills)
+  const [newExporter, setNewExporter] = useState({
+    name: '',
+    contactPerson: '',
+    email: '',
+    city: '',
+    commodity: ''
+  });
+
+  const loadExportersFromStorage = () => {
+    try {
+      const saved = localStorage.getItem('cargoshare_exporters');
+      if (saved) {
+        setExporters(JSON.parse(saved));
+      }
+    } catch (e) {
+      console.warn('Error reading cargoshare_exporters:', e);
+    }
+  };
+
   useEffect(() => {
-    fetchExporters();
+    loadExportersFromStorage();
+    fetchBookings();
+
+    const handleSync = () => {
+      loadExportersFromStorage();
+    };
+
+    window.addEventListener('cargoshare_data_synced', handleSync);
+    window.addEventListener('storage', handleSync);
+    return () => {
+      window.removeEventListener('cargoshare_data_synced', handleSync);
+      window.removeEventListener('storage', handleSync);
+    };
   }, [token]);
 
-  const fetchExporters = async () => {
-    if (!token) return;
+  const fetchBookings = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/admin/users?role=exporter', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
+      const savedBookings = JSON.parse(localStorage.getItem('cargoshare_bookings') || '[]');
+      const res = await fetch(`${API_BASE}/api/bookings`).catch(() => null);
+      let combinedBookings = savedBookings;
+      if (res && res.ok) {
         const json = await res.json();
-        if (json.data && json.data.length > 0) {
-          const mapped = json.data.map(u => ({
-            id: u._id,
-            name: u.companyName || u.name,
-            email: u.email,
-            bookings: Math.floor(Math.random() * 15),
-            phone: u.phone,
-          }));
-          setExporters(mapped);
+        if (json.status === 'success' && Array.isArray(json.data)) {
+          const ids = new Set(combinedBookings.map(b => b.id));
+          const newOnes = json.data.filter(b => !ids.has(b.id));
+          combinedBookings = [...combinedBookings, ...newOnes];
         }
       }
+      setAllBookings(combinedBookings);
+      // Automatically sync any bookings into the exporter directory!
+      autoSyncAllBookingsToAdmin(combinedBookings);
+      loadExportersFromStorage();
     } catch (err) {
-      console.error('Failed to fetch exporters from API, using cached view:', err);
+      console.warn('Fallback bookings:', err);
     } finally {
       setLoading(false);
     }
   };
 
-
-
-  const handleOpenForm = (exporter = null) => {
-    if (exporter) {
-      setFormData(exporter);
-      setEditingId(exporter.id);
-    } else {
-      setFormData({ name: '', email: '', bookings: 0 });
-      setEditingId(null);
-    }
-    setIsFormOpen(true);
+  const showToast = (msg) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(''), 3500);
   };
 
-  const handleSave = (e) => {
+  const handleSaveExporter = (e) => {
     e.preventDefault();
-    if (editingId) {
-      setExporters(exporters.map(exp => exp.id === editingId ? { ...formData, id: editingId } : exp));
-    } else {
-      const newId = `EXP-10${exporters.length + 1}`;
-      setExporters([...exporters, { ...formData, id: newId }]);
+    if (!newExporter.name || !newExporter.email) {
+      alert('Company name and email are required.');
+      return;
     }
-    setIsFormOpen(false);
+
+    const exporterObj = {
+      id: `EXP-${Math.floor(100 + Math.random() * 900)}`,
+      name: newExporter.name.trim(),
+      contactPerson: newExporter.contactPerson.trim() || 'Authorized Shipper',
+      email: newExporter.email.trim(),
+      city: newExporter.city.trim() || 'India',
+      commodity: newExporter.commodity.trim() || 'General Freight',
+      bookingsCount: 0,
+      totalCbm: 0,
+      totalSpend: '₹0',
+      status: 'Active'
+    };
+
+    const updated = [exporterObj, ...exporters];
+    setExporters(updated);
+    try {
+      localStorage.setItem('cargoshare_exporters', JSON.stringify(updated));
+    } catch (err) {
+      console.warn('Storage save error:', err);
+    }
+
+    // Reset blank form
+    setNewExporter({
+      name: '',
+      contactPerson: '',
+      email: '',
+      city: '',
+      commodity: ''
+    });
+    setIsAddModalOpen(false);
+    showToast(`Exporter "${exporterObj.name}" added successfully`);
   };
 
-  const handleDelete = (id) => {
-    setExporters(exporters.filter(exp => exp.id !== id));
-  };
+  // Filter
+  const filteredExporters = exporters.filter(exp => {
+    const q = searchQuery.toLowerCase();
+    return (
+      (exp.name || '').toLowerCase().includes(q) ||
+      (exp.email || '').toLowerCase().includes(q) ||
+      (exp.contactPerson || '').toLowerCase().includes(q) ||
+      (exp.city || '').toLowerCase().includes(q) ||
+      (exp.commodity || '').toLowerCase().includes(q)
+    );
+  });
 
-
+  // Calculate metrics dynamically
+  const totalExportersCount = exporters.length;
+  const totalBookingsPlaced = exporters.reduce((sum, e) => sum + (Number(e.bookingsCount) || 0), 0);
+  const totalCbmShipped = exporters.reduce((sum, e) => sum + (Number(e.totalCbm) || 0), 0);
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex justify-between items-center">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Exporters Management</h1>
-          <p className="text-slate-500 mt-1">Manage SME exporter accounts.</p>
-        </div>
-        <button 
-          onClick={() => handleOpenForm()}
-          className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-xl transition-colors shadow-sm"
-        >
-          <Plus className="w-5 h-5" /> Add Exporter
-        </button>
-      </div>
-
-      {alert && (
-        <div className="p-4 bg-purple-50 border border-purple-100 text-purple-800 rounded-2xl text-sm font-medium animate-in fade-in">
-          {alert}
-        </div>
-      )}
-
-      {isFormOpen && (
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 mb-6 animate-in fade-in">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-              <Users className="text-purple-500" /> {editingId ? 'Edit Exporter' : 'New Exporter'}
-            </h3>
-            <button onClick={() => setIsFormOpen(false)} className="text-slate-400 hover:text-slate-600"><X className="w-5 h-5" /></button>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-purple-100 text-purple-800 border border-purple-200">
+              👥 Registered SME Shippers Directory
+            </span>
+            <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-slate-100 text-slate-700 border border-slate-200 flex items-center gap-1">
+              <ShieldCheck className="w-3 h-3 text-purple-600" /> Shippers Registry
+            </span>
           </div>
-          <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Company / Exporter Name</label>
-              <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none focus:border-purple-500" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Email Address</label>
-              <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none focus:border-purple-500" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Total Bookings</label>
-              <input required type="number" min="0" value={formData.bookings} onChange={e => setFormData({...formData, bookings: parseInt(e.target.value)})} className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none focus:border-purple-500" />
-            </div>
+          <h1 className="text-3xl font-bold text-slate-900">SME Exporters Management</h1>
+          <p className="text-slate-500 mt-1">
+            Directory of registered SME shippers and their consolidated cargo reservations.
+          </p>
+        </div>
 
-            <div className="col-span-1 md:col-span-2 flex justify-end gap-3 mt-4">
-              <button type="button" onClick={() => setIsFormOpen(false)} className="px-4 py-2 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl font-medium">Cancel</button>
-              <button type="submit" className="px-4 py-2 bg-purple-600 text-white rounded-xl font-medium flex items-center gap-2"><Check className="w-4 h-4"/> Save Exporter</button>
-            </div>
-          </form>
+        <div className="flex items-center gap-2.5">
+          <button 
+            onClick={() => setIsAddModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl transition-all shadow-md hover:shadow-lg cursor-pointer"
+          >
+            <Plus className="w-4 h-4" /> Add SME Exporter
+          </button>
+        </div>
+      </div>
+
+      {toastMsg && (
+        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-xs font-bold flex items-center gap-2 animate-in fade-in shadow-xs">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+          <span>{toastMsg}</span>
         </div>
       )}
 
-      <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-slate-50 border-b border-slate-100 text-sm font-semibold text-slate-500">
-              <th className="p-4 pl-6">ID / User</th>
-              <th className="p-4">Email</th>
-              <th className="p-4 pr-6 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 text-sm">
-            {exporters.length === 0 && (
-              <tr><td colSpan="3" className="p-8 text-center text-slate-500">No exporters found.</td></tr>
-            )}
-            {exporters.map(exporter => (
-              <tr key={exporter.id} className="hover:bg-slate-50 transition-colors">
-                <td className="p-4 pl-6">
-                  <div className="font-bold text-slate-900">{exporter.name}</div>
-                  <div className="text-xs text-slate-400 font-mono">{exporter.id}</div>
-                </td>
-                <td className="p-4 text-slate-600 text-xs">{exporter.email}</td>
+      {/* KPI Metrics Strip (GST and Compliance Removed) */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Registered SME Shippers</span>
+            <div className="text-2xl font-black text-slate-900 mt-0.5">{totalExportersCount} SMEs</div>
+            <span className="text-[11px] text-purple-600 font-semibold">Active Shippers</span>
+          </div>
+          <div className="p-3 bg-purple-50 text-purple-600 rounded-xl">
+            <Users className="w-6 h-6" />
+          </div>
+        </div>
 
-                <td className="p-4 pr-6 text-right">
-                  <button onClick={() => handleOpenForm(exporter)} className="p-2 text-slate-400 hover:text-purple-600 transition-colors"><Edit2 className="w-4 h-4"/></button>
-                  <button onClick={() => handleDelete(exporter.id)} className="p-2 text-slate-400 hover:text-red-600 transition-colors"><Trash2 className="w-4 h-4"/></button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Total Bookings Placed</span>
+            <div className="text-2xl font-black text-blue-900 mt-0.5">{totalBookingsPlaced} Shipments</div>
+            <span className="text-[11px] text-blue-600 font-semibold">Across container carriers</span>
+          </div>
+          <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
+            <Package className="w-6 h-6" />
+          </div>
+        </div>
+
+        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Total Volume Shipped</span>
+            <div className="text-2xl font-black text-emerald-700 mt-0.5">{totalCbmShipped} CBM</div>
+            <span className="text-[11px] text-emerald-600 font-semibold">Container space consolidated</span>
+          </div>
+          <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
+            <Package className="w-6 h-6" />
+          </div>
+        </div>
       </div>
+
+      {/* Search and Filters */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="relative w-full sm:w-96">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input 
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search by exporter name, contact, city, commodity..."
+            className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-purple-500 outline-none"
+          />
+        </div>
+      </div>
+
+      {/* Exporters Table (GST Column & Compliance Tag Removed) */}
+      <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[11px]">
+              <tr>
+                <th className="px-5 py-4">Exporter Company</th>
+                <th className="px-5 py-4">Primary Commodity</th>
+                <th className="px-5 py-4">Contact Person</th>
+                <th className="px-5 py-4">Email Address</th>
+                <th className="px-5 py-4">Bookings Placed</th>
+                <th className="px-5 py-4">Volume (CBM)</th>
+                <th className="px-5 py-4">Gross Spend</th>
+                <th className="px-5 py-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {filteredExporters.length === 0 ? (
+                <tr>
+                  <td colSpan="8" className="px-6 py-12 text-center text-slate-400">
+                    <Building2 className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                    <p className="font-semibold text-slate-600">No SME exporters entered yet.</p>
+                    <p className="text-xs text-slate-400 mt-1">Click "+ Add SME Exporter" above to manually enter an exporter.</p>
+                  </td>
+                </tr>
+              ) : (
+                filteredExporters.map((exp) => (
+                  <tr key={exp.id} className="hover:bg-slate-50/70 transition-colors">
+                    
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-700 font-bold flex items-center justify-center text-xs shrink-0 border border-purple-100">
+                          {exp.name.substring(0, 2).toUpperCase()}
+                        </div>
+                        <div>
+                          <strong className="text-slate-900 block font-bold text-sm">{exp.name}</strong>
+                          <span className="text-[10px] text-slate-400">{exp.city}</span>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td className="px-5 py-4">
+                      <span className="font-semibold text-slate-700">{exp.commodity}</span>
+                    </td>
+
+                    <td className="px-5 py-4">
+                      <strong className="text-slate-800 block">{exp.contactPerson}</strong>
+                    </td>
+
+                    <td className="px-5 py-4">
+                      <span className="text-slate-600 font-mono text-xs flex items-center gap-1">
+                        <Mail className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+                        {exp.email}
+                      </span>
+                    </td>
+
+                    <td className="px-5 py-4">
+                      <span className="font-bold text-purple-700 text-sm">
+                        {exp.bookingsCount || 0} Bookings
+                      </span>
+                    </td>
+
+                    <td className="px-5 py-4">
+                      <span className="font-black text-slate-900 text-sm">
+                        {exp.totalCbm || 0} CBM
+                      </span>
+                    </td>
+
+                    <td className="px-5 py-4">
+                      <span className="font-black text-emerald-700 text-sm">
+                        {exp.totalSpend || '₹0'}
+                      </span>
+                    </td>
+
+                    <td className="px-5 py-4 text-right whitespace-nowrap">
+                      <button
+                        onClick={() => setSelectedExporterForBookings(exp)}
+                        className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold text-[11px] transition-all inline-flex items-center gap-1 cursor-pointer shadow-2xs"
+                        title="View all bookings placed by this exporter"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>View Bookings</span>
+                      </button>
+                    </td>
+
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* ----------------- EXPORTER BOOKINGS BREAKDOWN MODAL ----------------- */}
+      {selectedExporterForBookings && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden border border-slate-100 max-h-[90vh] flex flex-col">
+            
+            <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <div>
+                <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                  <span>{selectedExporterForBookings.name} — Booked Cargo Ledger</span>
+                </h3>
+                <p className="text-slate-500 text-xs">
+                  Contact: {selectedExporterForBookings.contactPerson} • Email: {selectedExporterForBookings.email}
+                </p>
+              </div>
+              <button 
+                onClick={() => setSelectedExporterForBookings(null)}
+                className="text-slate-400 hover:text-slate-600 text-2xl font-light leading-none cursor-pointer p-1"
+              >
+                &times;
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto space-y-4">
+              <div className="space-y-2.5">
+                {allBookings
+                  .filter(b => (b.exporterName || '').toLowerCase().includes(selectedExporterForBookings.name.toLowerCase().split(' ')[0]))
+                  .map((b, idx) => (
+                    <div key={idx} className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs space-y-1.5">
+                      <div className="flex justify-between items-center">
+                        <span className="font-mono font-bold text-slate-900 text-sm">#{b.id}</span>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          b.status === 'Approved' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                        }`}>
+                          {b.status}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-slate-600 text-xs">
+                        <span>Route: <strong>{b.route}</strong></span>
+                        <span className="font-black text-purple-700">{b.cbm} CBM</span>
+                      </div>
+                      <div className="flex justify-between items-center text-[11px] pt-1 border-t border-slate-100 text-slate-500">
+                        <span>Carrier: {b.carrier}</span>
+                        <span className="font-bold text-emerald-600">{b.paymentStatus || '25% Advance Paid'}</span>
+                      </div>
+                    </div>
+                  ))}
+
+                {allBookings.filter(b => (b.exporterName || '').toLowerCase().includes(selectedExporterForBookings.name.toLowerCase().split(' ')[0])).length === 0 && (
+                  <div className="bg-slate-50 p-8 rounded-2xl text-center text-slate-400">
+                    <p className="font-medium">No cargo bookings placed by this exporter yet.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-end">
+              <button 
+                onClick={() => setSelectedExporterForBookings(null)}
+                className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold text-xs transition-colors cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* ----------------- MANUAL ADD SME EXPORTER MODAL (BLANK INPUTS - NO GST) ----------------- */}
+      {isAddModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-100">
+            <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <Building2 className="text-purple-600 w-5 h-5" /> 
+                <span>Register SME Exporter Manually</span>
+              </h3>
+              <button 
+                onClick={() => setIsAddModalOpen(false)} 
+                className="text-slate-400 hover:text-slate-600 text-xl leading-none cursor-pointer p-1"
+              >
+                &times;
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveExporter} className="p-6 space-y-4 text-xs">
+              <div>
+                <label className="block font-bold text-slate-700 uppercase mb-1">Company / Exporter Name *</label>
+                <input 
+                  type="text" 
+                  value={newExporter.name} 
+                  onChange={e => setNewExporter({ ...newExporter, name: e.target.value })} 
+                  placeholder="Enter exporter company name..." 
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 outline-none focus:border-purple-500 bg-slate-50 focus:bg-white" 
+                  required 
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-700 uppercase mb-1">Authorized Contact Person</label>
+                  <input 
+                    type="text" 
+                    value={newExporter.contactPerson} 
+                    onChange={e => setNewExporter({ ...newExporter, contactPerson: e.target.value })} 
+                    placeholder="Enter contact name..." 
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 outline-none focus:border-purple-500 bg-slate-50 focus:bg-white" 
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 uppercase mb-1">Email Address *</label>
+                  <input 
+                    type="email" 
+                    value={newExporter.email} 
+                    onChange={e => setNewExporter({ ...newExporter, email: e.target.value })} 
+                    placeholder="Enter email address..." 
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 outline-none focus:border-purple-500 bg-slate-50 focus:bg-white" 
+                    required 
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-700 uppercase mb-1">City / Port Region</label>
+                  <input 
+                    type="text" 
+                    value={newExporter.city} 
+                    onChange={e => setNewExporter({ ...newExporter, city: e.target.value })} 
+                    placeholder="e.g. Mumbai, Chennai..." 
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 outline-none focus:border-purple-500 bg-slate-50 focus:bg-white" 
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 uppercase mb-1">Primary Commodity</label>
+                  <input 
+                    type="text" 
+                    value={newExporter.commodity} 
+                    onChange={e => setNewExporter({ ...newExporter, commodity: e.target.value })} 
+                    placeholder="e.g. Textiles, Spices, Machinery..." 
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 outline-none focus:border-purple-500 bg-slate-50 focus:bg-white" 
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-3 border-t border-slate-100">
+                <button 
+                  type="button" 
+                  onClick={() => setIsAddModalOpen(false)} 
+                  className="px-4 py-2 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl font-bold transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold transition-all shadow-md flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Check className="w-4 h-4" /> Save Exporter Manually
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

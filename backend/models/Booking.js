@@ -40,8 +40,45 @@ const bookingSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['Pending Confirmation', 'Accepted', 'Rejected', 'In Transit', 'Delivered'],
+    enum: ['Pending Confirmation', 'Accepted', 'Approved', 'Rejected', 'In Transit', 'Delivered'],
     default: 'Pending Confirmation',
+  },
+  paymentStatus: {
+    type: String,
+    enum: ['Paid', 'Fully Paid', 'Advance Paid', 'Advance Paid (25%)', 'Partial Paid', 'In Escrow', 'Pending Verification', 'Unpaid'],
+    default: 'Advance Paid (25%)',
+  },
+  paymentMethod: {
+    type: String,
+    default: 'UPI Advance (25%)',
+  },
+  amountPaid: {
+    type: Number,
+    default: 0,
+  },
+  advanceAmount: {
+    type: Number,
+    default: 0,
+  },
+  balanceAmount: {
+    type: Number,
+    default: 0,
+  },
+  totalAmount: {
+    type: Number,
+    default: 0,
+  },
+  transactionId: {
+    type: String,
+    default: null,
+  },
+  documentName: {
+    type: String,
+    default: 'Commercial_Invoice.pdf',
+  },
+  documents: {
+    type: [String],
+    default: () => ['Commercial_Invoice.pdf', 'Packing_List.pdf', 'Shipping_Bill_EDI.pdf'],
   },
   date: {
     type: String,
@@ -50,5 +87,6 @@ const bookingSchema = new mongoose.Schema({
 }, {
   timestamps: true,
 });
+
 
 module.exports = mongoose.model('Booking', bookingSchema);

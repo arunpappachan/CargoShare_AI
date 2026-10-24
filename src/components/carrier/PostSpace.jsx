@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Anchor, MapPin, Calendar, Package, PlusCircle, CheckCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { API_BASE } from '../../lib/apiConfig';
 
 export default function PostSpace() {
   const { user } = useAuth();
@@ -54,7 +55,7 @@ export default function PostSpace() {
     try {
       const carrierName = user?.companyName || 'Oceanic Freight Ltd.';
 
-      const res = await fetch('http://localhost:5000/api/spaces', {
+      const res = await fetch(`${API_BASE}/api/spaces`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -70,6 +71,46 @@ export default function PostSpace() {
 
       if (res.ok) {
         setPosted(true);
+
+        // Automatically store carrier details in admin dashboard
+        try {
+          const existingCarriers = JSON.parse(localStorage.getItem('cargoshare_carriers') || '[]');
+          const idx = existingCarriers.findIndex(c => c.name && c.name.toLowerCase() === carrierName.toLowerCase());
+          const routeStr = `${origin.toUpperCase()} → ${destination.toUpperCase()}`;
+          if (idx >= 0) {
+            const car = existingCarriers[idx];
+            const currRoutes = car.routes || '';
+            car.routes = currRoutes.includes(routeStr) ? currRoutes : (currRoutes ? `${currRoutes}, ${routeStr}` : routeStr);
+            car.spacePosted = `${(parseInt(car.spacePosted || '0') + Number(capacity)).toLocaleString()} CBM`;
+            existingCarriers[idx] = car;
+          } else {
+            const newCar = {
+              id: `CAR-${Math.floor(500 + Math.random() * 500)}`,
+              name: carrierName,
+              code: (carrierName.substring(0, 3) || 'CAR').toUpperCase(),
+              fmcLicense: `FMC-${Math.floor(10000 + Math.random() * 90000)}`,
+              imoCompany: `IMO-${Math.floor(1000000 + Math.random() * 9000000)}`,
+              headquarters: `${origin.toUpperCase()} Port Terminal Hub`,
+              email: user?.email || `dispatch@${carrierName.toLowerCase().replace(/[^a-z0-9]/g, '')}.com`,
+              fleetSize: 2,
+              spacePosted: `${Number(capacity).toLocaleString()} CBM`,
+              routes: routeStr,
+              status: 'Verified Partner',
+              activeListings: 1,
+              rating: '4.9/5',
+              onTimeRate: '98.5%',
+              vessels: [
+                { name: vessel.trim(), imo: 'IMO 9821044', capacity: `${capacity} CBM`, type: 'Container Vessel', flag: 'India' }
+              ]
+            };
+            existingCarriers.unshift(newCar);
+          }
+          localStorage.setItem('cargoshare_carriers', JSON.stringify(existingCarriers));
+          window.dispatchEvent(new CustomEvent('cargoshare_data_synced', { detail: { key: 'cargoshare_carriers' } }));
+        } catch (e) {
+          console.warn('Carrier auto sync error:', e);
+        }
+
         // Reset form
         setVessel('');
         setOrigin('');

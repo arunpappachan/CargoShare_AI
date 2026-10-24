@@ -149,6 +149,7 @@ export default function Register() {
                     <User className="h-5 w-5 text-slate-400" />
                   </div>
                   <input 
+                    id="name"
                     type="text" 
                     name="name"
                     value={formData.name}

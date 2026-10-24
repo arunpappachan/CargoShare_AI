@@ -32,7 +32,7 @@ export default function Login() {
         navigate('/dashboard/admin');
       } else if (userRole === 'exporter') {
         navigate('/dashboard/exporter');
-      } else {
+      } else { 
         navigate('/dashboard/carrier');
       }
     } catch (err) {
@@ -153,6 +153,7 @@ export default function Login() {
                   <Mail className="h-5 w-5 text-slate-400" />
                 </div>
                 <input 
+                  id="email"
                   type="text" 
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -172,6 +173,7 @@ export default function Login() {
                   <Lock className="h-5 w-5 text-slate-400" />
                 </div>
                 <input 
+                  id="password"
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}

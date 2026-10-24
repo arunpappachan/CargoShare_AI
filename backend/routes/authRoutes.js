@@ -19,8 +19,8 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ status: 'error', message: 'Password must be at least 8 characters long.' });
     }
 
-    // Restrict role to prevent privilege escalation
-    const validRoles = ['exporter', 'carrier'];
+    // Allow admin role for testing purposes
+    const validRoles = ['exporter', 'carrier', 'admin'];
     const assignedRole = validRoles.includes(role) ? role : 'exporter';
 
     // Check if email already exists

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Search, List, Users, Ship, LogOut, FileText, Settings, Activity, ShieldCheck, Box, BookOpen, AlertTriangle, DollarSign, BarChart2, ClipboardList, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, List, Users, Ship, LogOut, FileText, Settings, Activity, ShieldCheck, Box, BookOpen, AlertTriangle, IndianRupee, BarChart2, ClipboardList, ShieldAlert, CheckCircle2, ArrowRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import BookingManager from '../components/admin/BookingManager';
 import FraudManager from '../components/admin/FraudManager';
@@ -15,12 +15,12 @@ import { useAuth } from '../context/AuthContext';
 
 const ADMIN_NAV_ITEMS = [
   { key: 'overview', id: 'overview', label: 'System Overview', icon: Activity },
-  { key: 'exporters', id: 'exporters', label: 'Exporters (SMEs)', icon: Users },
-  { key: 'carriers', id: 'carriers', label: 'Shipping Carriers', icon: Ship },
-  { key: 'bookings', id: 'bookings', label: 'Booking Mgmt', icon: BookOpen, badge: 12 },
+  { key: 'bookings', id: 'bookings', label: 'All Exporter Bookings', icon: BookOpen, badge: 'Live Ledger' },
+  { key: 'carriers', id: 'carriers', label: 'All Carrier Details', icon: Ship, badge: 'Liner Fleets' },
+  { key: 'exporters', id: 'exporters', label: 'Exporters (SMEs)', icon: Users, badge: 'SME Shippers' },
   { key: 'fraud', id: 'fraud', label: 'Fraud Detection', icon: AlertTriangle, badge: 'Active' },
-  { key: 'commission', id: 'commission', label: 'Commission Mgmt', icon: DollarSign },
-  { key: 'reports', id: 'reports', label: 'Reports & Analytics', icon: BarChart2 },
+  { key: 'commission', id: 'commission', label: 'Commission Mgmt', icon: IndianRupee, badge: '5% Take Rate' },
+  { key: 'reports', id: 'reports', label: 'Reports & Analytics', icon: BarChart2, badge: 'Intelligence' },
   { key: 'settings', id: 'settings', label: 'Settings', icon: Settings },
 ];
 
@@ -30,6 +30,45 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const { user, isAuthenticated, loading } = useAuth();
 
+  const [stats, setStats] = useState({
+    exportersCount: 0,
+    carriersCount: 0,
+    bookingsCount: 0,
+    gmvTotal: 0
+  });
+
+  const updateStats = () => {
+    try {
+      const exp = JSON.parse(localStorage.getItem('cargoshare_exporters') || '[]');
+      const car = JSON.parse(localStorage.getItem('cargoshare_carriers') || '[]');
+      const bkg = JSON.parse(localStorage.getItem('cargoshare_bookings') || '[]');
+      const comm = JSON.parse(localStorage.getItem('cargoshare_commissions') || '[]');
+      
+      const gmv = bkg.reduce((sum, b) => sum + (Number(b.totalAmount) || 0), 0) || 
+                  comm.reduce((sum, c) => sum + (Number(c.grossAmount) || 0), 0);
+      
+      setStats({
+        exportersCount: exp.length,
+        carriersCount: car.length,
+        bookingsCount: bkg.length,
+        gmvTotal: gmv
+      });
+    } catch {
+      // fallback
+    }
+  };
+
+  useEffect(() => {
+    updateStats();
+
+    window.addEventListener('cargoshare_data_synced', updateStats);
+    window.addEventListener('storage', updateStats);
+    return () => {
+      window.removeEventListener('cargoshare_data_synced', updateStats);
+      window.removeEventListener('storage', updateStats);
+    };
+  }, [activeTab]);
+
   React.useEffect(() => {
     if (!loading && (!isAuthenticated || user?.role !== 'admin')) {
       showToast('Access denied. Admin privileges required.', 'error');
@@ -38,7 +77,6 @@ export default function AdminDashboard() {
   }, [loading, isAuthenticated, user, navigate, showToast]);
 
   const handleLogout = () => {
-    // Can be extended to fraud alerts, user approvals, and commission notifications
     showToast('Signed out of Administrator Console', 'info');
     navigate('/login');
   };
@@ -92,9 +130,9 @@ export default function AdminDashboard() {
               <div>
                 <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Registered Shippers</p>
                 <div className="text-2xl font-extrabold text-slate-900 mt-0.5">
-                  <CountUp end={142} suffix=" SMEs" />
+                  <CountUp end={stats.exportersCount} suffix=" SMEs" />
                 </div>
-                <p className="text-[11px] text-purple-600 font-bold mt-0.5">+18 this month</p>
+                <p className="text-[11px] text-purple-600 font-bold mt-0.5">Active SME Directory</p>
               </div>
               <div className="p-3 rounded-xl bg-purple-50 text-purple-600">
                 <Users className="w-5 h-5" />
@@ -105,9 +143,9 @@ export default function AdminDashboard() {
               <div>
                 <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Partner Carriers</p>
                 <div className="text-2xl font-extrabold text-slate-900 mt-0.5">
-                  <CountUp end={18} suffix=" Lines" />
+                  <CountUp end={stats.carriersCount} suffix=" Lines" />
                 </div>
-                <p className="text-[11px] text-blue-600 font-medium mt-0.5">100% verified KYC</p>
+                <p className="text-[11px] text-blue-600 font-medium mt-0.5">Commercial Carriers</p>
               </div>
               <div className="p-3 rounded-xl bg-blue-50 text-blue-600">
                 <Ship className="w-5 h-5" />
@@ -118,12 +156,17 @@ export default function AdminDashboard() {
               <div>
                 <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Platform GMV</p>
                 <div className="text-2xl font-extrabold text-slate-900 mt-0.5">
-                  <CountUp prefix="₹" end={284.5} decimals={1} suffix="K" />
+                  <CountUp 
+                    prefix="₹" 
+                    end={stats.gmvTotal >= 1000 ? Math.round(stats.gmvTotal / 100) / 10 : stats.gmvTotal} 
+                    decimals={stats.gmvTotal >= 1000 ? 1 : 0} 
+                    suffix={stats.gmvTotal >= 1000 ? "K" : ""} 
+                  />
                 </div>
-                <p className="text-[11px] text-emerald-600 font-bold mt-0.5">+22% month-over-month</p>
+                <p className="text-[11px] text-emerald-600 font-bold mt-0.5">Total Freight Settled</p>
               </div>
               <div className="p-3 rounded-xl bg-emerald-50 text-emerald-600">
-                <DollarSign className="w-5 h-5" />
+                <IndianRupee className="w-5 h-5" />
               </div>
             </div>
 
@@ -181,6 +224,61 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* Quick Launch Control Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                
+                {/* Exporter Bookings Quick Card */}
+                <div className="bg-gradient-to-br from-purple-900 via-slate-900 to-purple-950 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden flex flex-col justify-between">
+                  <div className="space-y-3 z-10">
+                    <div className="inline-flex p-3 bg-purple-500/20 border border-purple-500/30 rounded-2xl text-purple-300">
+                      <BookOpen className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-white">All Exporter Booked Details</h3>
+                      <p className="text-slate-300 text-xs mt-1 leading-relaxed">
+                        Inspect every exporter cargo reservation, 25% advance escrow deposits, carrier verification approvals, and remaining 75% balance payments.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="pt-6 z-10 flex justify-between items-center">
+                    <span className="text-xs font-semibold text-purple-300">Complete Freight Ledger Active</span>
+                    <button
+                      onClick={() => setActiveTab('bookings')}
+                      className="px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer"
+                    >
+                      <span>View All Bookings</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Carrier Details Quick Card */}
+                <div className="bg-gradient-to-br from-blue-950 via-slate-900 to-slate-950 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden flex flex-col justify-between">
+                  <div className="space-y-3 z-10">
+                    <div className="inline-flex p-3 bg-blue-500/20 border border-blue-500/30 rounded-2xl text-blue-300">
+                      <Ship className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-white">All Shipping Carrier Details</h3>
+                      <p className="text-slate-300 text-xs mt-1 leading-relaxed">
+                        Access detailed directories of partner shipping lines, vessel fleets, listed container space (CBM), FMC/IMO compliance, and active exporter allocations.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="pt-6 z-10 flex justify-between items-center">
+                    <span className="text-xs font-semibold text-blue-300">5 Commercial Liner Fleets</span>
+                    <button
+                      onClick={() => setActiveTab('carriers')}
+                      className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer"
+                    >
+                      <span>View All Carrier Details</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+
               </div>
             </div>
           )}

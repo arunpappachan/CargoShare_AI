@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Ship, LayoutDashboard, PlusCircle, Inbox, User, LogOut, Package, Anchor, CheckCircle2, TrendingUp, BarChart3 } from 'lucide-react';
+import { Ship, LayoutDashboard, PlusCircle, Inbox, User, LogOut, Package, Anchor, CheckCircle2, TrendingUp, BarChart3, DollarSign, FileText } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import CarrierOverview from '../components/carrier/CarrierOverview';
 import PostSpace from '../components/carrier/PostSpace';
 import BookingRequests from '../components/carrier/BookingRequests';
+import PaidExportersView from '../components/carrier/PaidExportersView';
 import SidebarNav from '../components/common/SidebarNav';
 import CountUp from '../components/common/CountUp';
 import { useToast } from '../context/ToastContext';
@@ -13,8 +14,10 @@ const CARRIER_NAV_ITEMS = [
   { key: 'overview', id: 'overview', label: 'Fleet Overview', icon: LayoutDashboard },
   { key: 'post', id: 'post', label: 'Post Space', icon: PlusCircle },
   { key: 'requests', id: 'requests', label: 'Booking Requests', icon: Inbox, badge: 3 },
+  { key: 'paid-exporters', id: 'paid-exporters', label: 'Paid Exporters', icon: DollarSign, badge: 'Paid' },
   { key: 'profile', id: 'profile', label: 'Carrier Profile', icon: User },
 ];
+
 
 export default function ShippingDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
@@ -145,7 +148,9 @@ export default function ShippingDashboard() {
           {activeTab === 'overview' && <CarrierOverview />}
           {activeTab === 'post' && <PostSpace />}
           {activeTab === 'requests' && <BookingRequests />}
+          {activeTab === 'paid-exporters' && <PaidExportersView onNavigateTab={(tab) => setActiveTab(tab)} />}
           
+
           {activeTab === 'profile' && (
              <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-200">
                 <div className="mb-6 pb-6 border-b border-slate-100 flex items-center gap-4">
