@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Ship, PlusCircle, TrendingUp, Package, Anchor, DollarSign, Activity, Loader2 } from 'lucide-react';
+import { API_BASE } from '../../lib/apiConfig';
 
 export default function CarrierOverview() {
   const [recentPostings, setRecentPostings] = useState([]);
@@ -11,7 +12,7 @@ export default function CarrierOverview() {
 
   const fetchSpaces = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/spaces');
+      const res = await fetch(`${API_BASE}/api/spaces`);
       const data = await res.json();
       if (data.status === 'success') {
         // Show last 3 spaces

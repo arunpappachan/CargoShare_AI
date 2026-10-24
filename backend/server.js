@@ -673,7 +673,7 @@ const startServer = async () => {
   await seedInitialData();
 
   // Attempt Postgres connection pool check (optional)
-  if (process.env.PG_HOST) {
+  if (process.env.PG_HOST || process.env.DATABASE_URL) {
     connectPostgres().catch(() => {});
   }
 

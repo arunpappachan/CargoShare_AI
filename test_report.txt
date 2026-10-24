@@ -1,0 +1,142 @@
+================================================================================
+                           CARGOSHARE AI
+                     AUTOMATED TEST EXECUTION REPORT
+================================================================================
+
+REPORT DETAILS
+--------------
+Date generated : Thu, 22 Oct 2026 15:56:33 GMT
+Execution Time : 711.16 seconds
+Environment    : Windows_NT 10.0.26200 (x64)
+Node Version   : v24.12.0
+Test Scope     : End-to-End (E2E) UI & Lifecycle Tests
+
+================================================================================
+                             TEST RESULTS
+================================================================================
+
+Admin Dashboard E2E
+    √ should verify Admin dashboard sidebar (778ms)
+    √ should be able to log and view Fraud alerts (1674ms)
+
+  Authentication E2E
+    1) should display the login form and have standard elements
+    √ should be able to toggle to the registration page (45640ms)
+    √ should successfully log in and redirect to dashboard (9921ms)
+
+  Carrier Dashboard E2E
+    √ should verify Carrier dashboard sidebar and main elements (421ms)
+    √ should be able to navigate to Profile (414ms)
+    √ should be able to post available space (1505ms)
+    √ should be able to approve a booking request (469ms)
+
+  Exporter Dashboard E2E
+    2) "before all" hook for "should verify Exporter dashboard sidebar and main elements"
+
+  Landing Page E2E
+    √ should load the homepage and check title (28724ms)
+    3) should have functional navigation buttons
+
+  E2E Lifecycle: Space Posting -> Booking -> Approval
+    4) Step 1 (Carrier): Should log in and post a unique space
+    5) Step 2 (Exporter): Should log in, find the unique space, and book it
+    6) Step 3 (Carrier): Should log in, find the booking request, and approve it
+    7) Step 4 (Exporter): Should log in and verify the booking is approved
+    8) "after all" hook for "Step 4 (Exporter): Should log in and verify the booking is approved"
+
+
+  9 passing (11m)
+  8 failing
+
+  1) Authentication E2E
+       should display the login form and have standard elements:
+     Error: Timeout of 60000ms exceeded. For async tests and hooks, ensure "done()" is called; if returning a Promise, ensure it resolves. (C:\Project\CargoShare_AI\tests\e2e\auth.test.js)
+      at createTimeoutError (file:///C:/Project/CargoShare_AI/node_modules/mocha/lib/errors.js:329:15)
+      at Test._timeoutError (file:///C:/Project/CargoShare_AI/node_modules/mocha/lib/runnable.js:429:12)
+      at Timeout.<anonymous> (file:///C:/Project/CargoShare_AI/node_modules/mocha/lib/runnable.js:240:26)
+      at listOnTimeout (node:internal/timers:605:17)
+      at process.processTimers (node:internal/timers:541:7)
+
+  2) Exporter Dashboard E2E
+       "before all" hook for "should verify Exporter dashboard sidebar and main elements":
+     Error: Timeout of 60000ms exceeded. For async tests and hooks, ensure "done()" is called; if returning a Promise, ensure it resolves. (C:\Project\CargoShare_AI\tests\e2e\exporter.test.js)
+      at createTimeoutError (file:///C:/Project/CargoShare_AI/node_modules/mocha/lib/errors.js:329:15)
+      at Hook._timeoutError (file:///C:/Project/CargoShare_AI/node_modules/mocha/lib/runnable.js:429:12)
+      at Timeout.<anonymous> (file:///C:/Project/CargoShare_AI/node_modules/mocha/lib/runnable.js:240:26)
+      at listOnTimeout (node:internal/timers:605:17)
+      at process.processTimers (node:internal/timers:541:7)
+
+  3) Landing Page E2E
+       should have functional navigation buttons:
+     Error: Timeout of 60000ms exceeded. For async tests and hooks, ensure "done()" is called; if returning a Promise, ensure it resolves. (C:\Project\CargoShare_AI\tests\e2e\landing.test.js)
+      at createTimeoutError (file:///C:/Project/CargoShare_AI/node_modules/mocha/lib/errors.js:329:15)
+      at Test._timeoutError (file:///C:/Project/CargoShare_AI/node_modules/mocha/lib/runnable.js:429:12)
+      at Timeout.<anonymous> (file:///C:/Project/CargoShare_AI/node_modules/mocha/lib/runnable.js:240:26)
+      at listOnTimeout (node:internal/timers:605:17)
+      at process.processTimers (node:internal/timers:541:7)
+
+  4) E2E Lifecycle: Space Posting -> Booking -> Approval
+       Step 1 (Carrier): Should log in and post a unique space:
+     Error: Timeout of 60000ms exceeded. For async tests and hooks, ensure "done()" is called; if returning a Promise, ensure it resolves. (C:\Project\CargoShare_AI\tests\e2e\lifecycle.test.js)
+      at createTimeoutError (file:///C:/Project/CargoShare_AI/node_modules/mocha/lib/errors.js:329:15)
+      at Test._timeoutError (file:///C:/Project/CargoShare_AI/node_modules/mocha/lib/runnable.js:429:12)
+      at Timeout.<anonymous> (file:///C:/Project/CargoShare_AI/node_modules/mocha/lib/runnable.js:240:26)
+      at listOnTimeout (node:internal/timers:605:17)
+      at process.processTimers (node:internal/timers:541:7)
+
+  5) E2E Lifecycle: Space Posting -> Booking -> Approval
+       Step 2 (Exporter): Should log in, find the unique space, and book it:
+     Error: Timeout of 60000ms exceeded. For async tests and hooks, ensure "done()" is called; if returning a Promise, ensure it resolves. (C:\Project\CargoShare_AI\tests\e2e\lifecycle.test.js)
+      at createTimeoutError (file:///C:/Project/CargoShare_AI/node_modules/mocha/lib/errors.js:329:15)
+      at Test._timeoutError (file:///C:/Project/CargoShare_AI/node_modules/mocha/lib/runnable.js:429:12)
+      at Timeout.<anonymous> (file:///C:/Project/CargoShare_AI/node_modules/mocha/lib/runnable.js:240:26)
+      at listOnTimeout (node:internal/timers:605:17)
+      at process.processTimers (node:internal/timers:541:7)
+
+  6) E2E Lifecycle: Space Posting -> Booking -> Approval
+       Step 3 (Carrier): Should log in, find the booking request, and approve it:
+     Error: Timeout of 60000ms exceeded. For async tests and hooks, ensure "done()" is called; if returning a Promise, ensure it resolves. (C:\Project\CargoShare_AI\tests\e2e\lifecycle.test.js)
+      at createTimeoutError (file:///C:/Project/CargoShare_AI/node_modules/mocha/lib/errors.js:329:15)
+      at Test._timeoutError (file:///C:/Project/CargoShare_AI/node_modules/mocha/lib/runnable.js:429:12)
+      at Timeout.<anonymous> (file:///C:/Project/CargoShare_AI/node_modules/mocha/lib/runnable.js:240:26)
+      at listOnTimeout (node:internal/timers:605:17)
+      at process.processTimers (node:internal/timers:541:7)
+
+  7) E2E Lifecycle: Space Posting -> Booking -> Approval
+       Step 4 (Exporter): Should log in and verify the booking is approved:
+     Error: Timeout of 60000ms exceeded. For async tests and hooks, ensure "done()" is called; if returning a Promise, ensure it resolves. (C:\Project\CargoShare_AI\tests\e2e\lifecycle.test.js)
+      at createTimeoutError (file:///C:/Project/CargoShare_AI/node_modules/mocha/lib/errors.js:329:15)
+      at Test._timeoutError (file:///C:/Project/CargoShare_AI/node_modules/mocha/lib/runnable.js:429:12)
+      at Timeout.<anonymous> (file:///C:/Project/CargoShare_AI/node_modules/mocha/lib/runnable.js:240:26)
+      at listOnTimeout (node:internal/timers:605:17)
+      at process.processTimers (node:internal/timers:541:7)
+
+  8) E2E Lifecycle: Space Posting -> Booking -> Approval
+       "after all" hook for "Step 4 (Exporter): Should log in and verify the booking is approved":
+     Error: Timeout of 60000ms exceeded. For async tests and hooks, ensure "done()" is called; if returning a Promise, ensure it resolves. (C:\Project\CargoShare_AI\tests\e2e\lifecycle.test.js)
+      at createTimeoutError (file:///C:/Project/CargoShare_AI/node_modules/mocha/lib/errors.js:329:15)
+      at Hook._timeoutError (file:///C:/Project/CargoShare_AI/node_modules/mocha/lib/runnable.js:429:12)
+      at Timeout.<anonymous> (file:///C:/Project/CargoShare_AI/node_modules/mocha/lib/runnable.js:240:26)
+      at listOnTimeout (node:internal/timers:605:17)
+      at process.processTimers (node:internal/timers:541:7)
+
+Errors:
+Login failed, tests might fail if protected. Error: ECONNREFUSED connect ECONNREFUSED 127.0.0.1:14354
+    at ClientRequest.<anonymous> (C:\Project\CargoShare_AI\node_modules\selenium-webdriver\http\index.js:293:15)
+    at ClientRequest.emit (node:events:508:28)
+    at emitErrorEvent (node:_http_client:108:11)
+    at Socket.socketErrorListener (node:_http_client:575:5)
+    at Socket.emit (node:events:508:28)
+    at emitErrorNT (node:internal/streams/destroy:170:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:129:3)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+
+================================================================================
+                                SUMMARY
+================================================================================
+Total Tests Executed : 17
+Tests Passed         : 9
+Tests Failed         : 8
+
+OVERALL STATUS       : FAILED
+================================================================================
