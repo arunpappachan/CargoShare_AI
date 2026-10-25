@@ -1,11 +1,12 @@
 import { expect } from 'chai';
 import { By, until } from 'selenium-webdriver';
-import { createDriver, APP_URL } from './helpers.js';
+import { createDriver, APP_URL, seedTestUsers } from './helpers.js';
 
 describe('Authentication E2E', function () {
   let driver;
 
   before(async function () {
+    await seedTestUsers();
     driver = await createDriver();
   });
 

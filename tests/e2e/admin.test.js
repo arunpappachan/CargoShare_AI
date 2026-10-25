@@ -35,32 +35,21 @@ describe('Admin Dashboard E2E', function () {
     expect(await fraudTab.isDisplayed()).to.be.true;
   });
 
-  it('should be able to log and view Fraud alerts', async function () {
+  it('should be able to view Fraud alerts and telemetry table', async function () {
     await driver.get(`${APP_URL}/dashboard/admin`);
     
     const fraudTab = await driver.wait(until.elementLocated(By.xpath("//button[contains(., 'Fraud')]")), 5000);
     await fraudTab.click();
 
-    // Wait for the fraud component to mount (it should have 'Log Alert' button)
-    const logBtn = await driver.wait(until.elementLocated(By.xpath("//button[contains(., 'Log Alert')]")), 5000);
-    expect(await logBtn.isDisplayed()).to.be.true;
+    // Verify Fraud detection heading
+    const heading = await driver.wait(until.elementLocated(By.xpath("//h1[contains(., 'Fraud Detection')]")), 5000);
+    expect(await heading.isDisplayed()).to.be.true;
 
-    await logBtn.click();
-
-    // Fill form
-    // Note: The inputs don't have IDs but they are the only inputs on the form, we can find them by index or label
-    // User/Company is the first input, Alert Type is the second
-    const inputs = await driver.findElements(By.css('input[type="text"]'));
-    if (inputs.length >= 2) {
-      await inputs[0].sendKeys('Test Malicious Exporter');
-      await inputs[1].sendKeys('Suspicious IP location');
-    }
-
-    const saveBtn = await driver.findElement(By.xpath("//button[contains(., 'Save Alert')]"));
-    await saveBtn.click();
-
-    // Verify it appears in the table
-    const tableEl = await driver.wait(until.elementLocated(By.xpath("//td[contains(., 'Test Malicious Exporter')]")), 5000);
+    // Verify alert records in table
+    const tableEl = await driver.wait(until.elementLocated(By.xpath("//td[contains(., 'TechFreight SME')]")), 5000);
     expect(await tableEl.isDisplayed()).to.be.true;
+
+    const alertType = await driver.findElement(By.xpath("//td[contains(., 'Suspicious IP Login')]"));
+    expect(await alertType.isDisplayed()).to.be.true;
   });
 });

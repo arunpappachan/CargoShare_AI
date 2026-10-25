@@ -8,8 +8,7 @@ const APP_URL = 'http://localhost:5173';
  */
 export async function createDriver() {
   const options = new chrome.Options();
-  // Uncomment the below line to run tests headless
-  // options.addArguments('--headless', '--disable-gpu', '--window-size=1920,1080');
+  options.addArguments('--headless=new', '--disable-gpu', '--no-sandbox', '--window-size=1920,1080');
   
   return new Builder()
     .forBrowser('chrome')

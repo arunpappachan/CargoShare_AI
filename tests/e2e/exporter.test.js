@@ -64,7 +64,7 @@ describe('Exporter Dashboard E2E', function () {
     await driver.executeScript(`
       const input = arguments[0];
       const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
-      nativeSetter.call(input, '2028-12-12');
+      nativeSetter.call(input, '2028-09-01');
       input.dispatchEvent(new Event('change', { bubbles: true }));
       input.dispatchEvent(new Event('input', { bubbles: true }));
     `, dateInput);
@@ -106,18 +106,22 @@ describe('Exporter Dashboard E2E', function () {
     }
 
     // Wait for booking modal and fill it
-    const commodityInput = await driver.wait(until.elementLocated(By.xpath("//input[@placeholder='e.g. Electronics, Textiles']")), 5000);
+    const commodityInput = await driver.wait(until.elementLocated(By.css('input[placeholder*="Textiles"]')), 5000);
     await commodityInput.sendKeys('Electronics');
 
-    const weightInput = await driver.findElement(By.xpath("//input[@placeholder='2000']"));
+    const weightInput = await driver.findElement(By.css('input[placeholder="2500"]'));
     await weightInput.sendKeys('500');
 
-    // Click Confirm Booking
-    const confirmBtn = await driver.findElement(By.xpath("//button[contains(., 'Confirm Booking')]"));
-    await confirmBtn.click();
+    // Step 1: Proceed to Payment Options
+    const proceedBtn = await driver.findElement(By.xpath("//button[contains(., 'Proceed to Payment Options')]"));
+    await proceedBtn.click();
 
-    // Wait for confirmation success check
-    const successMsg = await driver.wait(until.elementLocated(By.xpath("//h3[contains(text(), 'Booking Confirmed!')]")), 5000);
+    // Step 2: Pay & Lock Slot
+    const payBtn = await driver.wait(until.elementLocated(By.xpath("//button[contains(., 'Lock Slot')]")), 5000);
+    await payBtn.click();
+
+    // Step 3: Wait for confirmation success check
+    const successMsg = await driver.wait(until.elementLocated(By.xpath("//h3[contains(text(), 'Booking Confirmed!')]")), 10000);
     expect(await successMsg.isDisplayed()).to.be.true;
     
     const doneBtn = await driver.findElement(By.xpath("//button[contains(., 'Done')]"));

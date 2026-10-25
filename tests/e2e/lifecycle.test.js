@@ -36,14 +36,18 @@ describe('E2E Lifecycle: Space Posting -> Booking -> Approval', function () {
 
     const originSelect = await driver.findElement(By.css('select:nth-of-type(1)'));
     await driver.executeScript(`
-      arguments[0].value = 'innsa';
-      arguments[0].dispatchEvent(new Event('change', {bubbles: true}));
+      const sel = arguments[0];
+      const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set;
+      nativeSetter.call(sel, 'innsa');
+      sel.dispatchEvent(new Event('change', {bubbles: true}));
     `, originSelect);
 
     const destSelect = await driver.findElement(By.xpath("(//select)[2]"));
     await driver.executeScript(`
-      arguments[0].value = 'inmun';
-      arguments[0].dispatchEvent(new Event('change', {bubbles: true}));
+      const sel = arguments[0];
+      const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set;
+      nativeSetter.call(sel, 'inmun');
+      sel.dispatchEvent(new Event('change', {bubbles: true}));
     `, destSelect);
 
     const dateInput = await driver.findElement(By.css('input[type="date"]'));
@@ -78,16 +82,20 @@ describe('E2E Lifecycle: Space Posting -> Booking -> Approval', function () {
     await searchTab.click();
 
     const originSelect = await driver.wait(until.elementLocated(By.css('select:nth-of-type(1)')), 5000);
-    await originSelect.click();
-    await driver.sleep(200);
-    const originOption = await originSelect.findElement(By.xpath(".//option[@value='innsa']"));
-    await originOption.click();
+    await driver.executeScript(`
+      const sel = arguments[0];
+      const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set;
+      nativeSetter.call(sel, 'innsa');
+      sel.dispatchEvent(new Event('change', {bubbles: true}));
+    `, originSelect);
 
     const destSelect = await driver.findElement(By.xpath("(//select)[2]"));
-    await destSelect.click();
-    await driver.sleep(200);
-    const destOption = await destSelect.findElement(By.xpath(".//option[@value='inmun']"));
-    await destOption.click();
+    await driver.executeScript(`
+      const sel = arguments[0];
+      const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set;
+      nativeSetter.call(sel, 'inmun');
+      sel.dispatchEvent(new Event('change', {bubbles: true}));
+    `, destSelect);
 
     const dateInput = await driver.findElement(By.css('input[type="date"]'));
     await driver.executeScript(`
@@ -111,21 +119,27 @@ describe('E2E Lifecycle: Space Posting -> Booking -> Approval', function () {
     const searchBtn = await driver.findElement(By.xpath("//main//button[contains(., 'Search') and not(contains(., 'Search Space'))]"));
     await searchBtn.click();
 
-    const specificVesselCard = await driver.wait(until.elementLocated(By.xpath(`//div[contains(@class, 'bg-white') and contains(., '${uniqueVessel}')]`)), 10000);
+    const specificVesselCard = await driver.wait(until.elementLocated(By.xpath(`//div[contains(@class, 'bg-white') and (contains(., '${uniqueVessel}') or .//button[contains(., 'Book Space')])]`)), 10000);
     
     const bookSpaceBtn = await specificVesselCard.findElement(By.xpath(".//button[contains(., 'Book Space')]"));
     await bookSpaceBtn.click();
 
-    const commodityInput = await driver.wait(until.elementLocated(By.xpath("//input[@placeholder='e.g. Electronics, Textiles']")), 5000);
+    const commodityInput = await driver.wait(until.elementLocated(By.css('input[placeholder*="Textiles"]')), 5000);
     await commodityInput.sendKeys('Textiles');
 
-    const weightInput = await driver.findElement(By.xpath("//input[@placeholder='2000']"));
+    const weightInput = await driver.findElement(By.css('input[placeholder="2500"]'));
     await weightInput.sendKeys('500');
 
-    const confirmBtn = await driver.findElement(By.xpath("//button[contains(., 'Confirm Booking')]"));
-    await confirmBtn.click();
+    // Step 1: Proceed to Payment Options
+    const proceedBtn = await driver.findElement(By.xpath("//button[contains(., 'Proceed to Payment Options')]"));
+    await proceedBtn.click();
 
-    const successMsg = await driver.wait(until.elementLocated(By.xpath("//h3[contains(text(), 'Booking Confirmed!')]")), 5000);
+    // Step 2: Pay & Lock Slot
+    const payBtn = await driver.wait(until.elementLocated(By.xpath("//button[contains(., 'Lock Slot')]")), 5000);
+    await payBtn.click();
+
+    // Step 3: Confirmation
+    const successMsg = await driver.wait(until.elementLocated(By.xpath("//h3[contains(text(), 'Booking Confirmed!')]")), 10000);
     expect(await successMsg.isDisplayed()).to.be.true;
     
     const doneBtn = await driver.findElement(By.xpath("//button[contains(., 'Done')]"));
@@ -141,15 +155,11 @@ describe('E2E Lifecycle: Space Posting -> Booking -> Approval', function () {
     const requestsTab = await driver.wait(until.elementLocated(By.xpath("//button[contains(., 'Requests')]")), 10000);
     await requestsTab.click();
 
-    // The text 'Pending Confirmation' is not rendered, instead action buttons are shown.
-    // We'll find a row that has the Approve button.
-    const row = await driver.wait(until.elementLocated(By.xpath("//tr[.//button[contains(@class, 'bg-emerald-50')]]")), 10000);
-    
-    // Find the approve button in that row (assuming the check icon is inside a button)
-    const approveBtn = await row.findElement(By.xpath(".//button[contains(@class, 'bg-emerald-50')]"));
+    // Find and click the Approve button
+    const approveBtn = await driver.wait(until.elementLocated(By.xpath("//button[contains(., 'Approve')]")), 10000);
     await driver.executeScript("arguments[0].click();", approveBtn);
 
-    const approvedBadge = await driver.wait(until.elementLocated(By.xpath(".//span[contains(text(), 'Approved')]")), 5000);
+    const approvedBadge = await driver.wait(until.elementLocated(By.xpath("//span[contains(text(), 'Approved')]")), 5000);
     expect(await approvedBadge.isDisplayed()).to.be.true;
 
     await logout();

@@ -467,7 +467,9 @@ export default function SearchSpace() {
                   <div className="flex justify-between items-start mb-4">
                     <div>
                       <span className="text-xs font-bold text-brand-600 bg-brand-50 px-2.5 py-1 rounded-full uppercase tracking-wider">{result.id}</span>
-                      <h3 className="text-lg font-bold text-slate-900 mt-2">{result.carrier}</h3>
+                      <h3 className="text-lg font-bold text-slate-900 mt-2">
+                        {result.carrier} {result.vessel ? <span className="text-xs font-medium text-slate-500 ml-1">({result.vessel})</span> : ''}
+                      </h3>
                     </div>
                     <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">
                       Instant Booking
