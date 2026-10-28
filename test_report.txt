@@ -5,8 +5,8 @@
 
 REPORT DETAILS
 --------------
-Date generated : Wed, 28 Oct 2026 16:43:31 GMT
-Execution Time : 63.84 seconds
+Date generated : Wed, 28 Oct 2026 17:18:31 GMT
+Execution Time : 71.63 seconds
 Environment    : Windows_NT 10.0.26200 (x64)
 Node Version   : v24.12.0
 Test Framework : Mocha, Chai & Selenium WebDriver
@@ -17,37 +17,37 @@ Test Scope     : End-to-End (E2E) UI, Auth, Carrier, Exporter, Lifecycle Workflo
 ================================================================================
 
 Admin Dashboard E2E
-    √ should verify Admin dashboard sidebar (737ms)
-    √ should be able to view Fraud alerts and telemetry table (500ms)
+    √ should verify Admin dashboard sidebar (572ms)
+    √ should be able to view Fraud alerts and telemetry table (465ms)
 
   Authentication E2E
-    √ should display the login form and have standard elements (7312ms)
-    √ should be able to toggle to the registration page (1020ms)
-    √ should successfully log in and redirect to dashboard (1992ms)
+    √ should display the login form and have standard elements (9425ms)
+    √ should be able to toggle to the registration page (1036ms)
+    √ should successfully log in and redirect to dashboard (1879ms)
 
   Carrier Dashboard E2E
-    √ should verify Carrier dashboard sidebar and main elements (697ms)
-    √ should be able to navigate to Profile (399ms)
-    √ should be able to post available space (948ms)
-    √ should be able to approve a booking request (416ms)
+    √ should verify Carrier dashboard sidebar and main elements (398ms)
+    √ should be able to navigate to Profile (387ms)
+    √ should be able to post available space (1002ms)
+    √ should be able to approve a booking request (443ms)
 
   Exporter Dashboard E2E
-    √ should verify Exporter dashboard sidebar and main elements (687ms)
-    √ should be able to search and book a container (3487ms)
-    √ should be able to view and interact with documents (422ms)
+    √ should verify Exporter dashboard sidebar and main elements (660ms)
+    √ should be able to search and book a container (3334ms)
+    √ should be able to view and interact with documents (430ms)
 
   Landing Page E2E
-    √ should load the homepage and check title (1220ms)
-    √ should have functional navigation buttons (1025ms)
+    √ should load the homepage and check title (4370ms)
+    √ should have functional navigation buttons (662ms)
 
   E2E Lifecycle: Space Posting -> Booking -> Approval
-    √ Step 1 (Carrier): Should log in and post a unique space (4218ms)
-    √ Step 2 (Exporter): Should log in, find the unique space, and book it (4759ms)
-    √ Step 3 (Carrier): Should log in, find the booking request, and approve it (2541ms)
-    √ Step 4 (Exporter): Should log in and verify the booking is approved (2058ms)
+    √ Step 1 (Carrier): Should log in and post a unique space (4944ms)
+    √ Step 2 (Exporter): Should log in, find the unique space, and book it (5188ms)
+    √ Step 3 (Carrier): Should log in, find the booking request, and approve it (2209ms)
+    √ Step 4 (Exporter): Should log in and verify the booking is approved (2284ms)
 
 
-  18 passing (59s)
+  18 passing (1m)
 
 ================================================================================
                                 SUMMARY

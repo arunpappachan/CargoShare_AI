@@ -326,7 +326,7 @@ app.get('/api/spaces', async (req, res) => {
 app.post('/api/spaces', async (req, res) => {
   try {
     const { vessel, origin, dest, date, capacity, price, carrier } = req.body;
-    
+
     if (!vessel || !origin || !dest || !date || !capacity || !price) {
       return res.status(400).json({ status: 'error', message: 'Missing required fields' });
     }
@@ -379,14 +379,14 @@ app.get('/api/bookings', async (req, res) => {
 // POST Booking
 app.post('/api/bookings', async (req, res) => {
   try {
-    const { 
-      route, 
-      carrier, 
-      cbm, 
-      spaceId, 
-      commodity, 
-      weight, 
-      specialReq, 
+    const {
+      route,
+      carrier,
+      cbm,
+      spaceId,
+      commodity,
+      weight,
+      specialReq,
       exporterName,
       paymentStatus,
       paymentMethod,
@@ -398,7 +398,7 @@ app.post('/api/bookings', async (req, res) => {
       documentName,
       documents
     } = req.body;
-    
+
     if (!route || !cbm) {
       return res.status(400).json({ status: 'error', message: 'Missing required fields' });
     }
@@ -552,7 +552,7 @@ app.get('/api/documents', async (req, res) => {
       const data = await Document.find(filter).sort({ createdAt: -1 });
       return res.json({ status: 'success', source: 'mongodb', data });
     }
-    
+
     let filteredDocs = fallbackDocuments;
     if (bookingId) filteredDocs = filteredDocs.filter(d => d.bookingId === bookingId);
     res.json({ status: 'success', source: 'memory_fallback', data: filteredDocs });
@@ -565,7 +565,7 @@ app.get('/api/documents', async (req, res) => {
 app.post('/api/documents', async (req, res) => {
   try {
     const { bookingId, type, fileName } = req.body;
-    
+
     if (!type || !fileName) {
       return res.status(400).json({ status: 'error', message: 'Missing required fields' });
     }

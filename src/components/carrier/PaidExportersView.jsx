@@ -19,6 +19,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { API_BASE } from '../../lib/apiConfig';
+import { io } from 'socket.io-client';
 import CarrierDocumentViewerModal from './CarrierDocumentViewerModal';
 
 export default function PaidExportersView({ onNavigateTab }) {
@@ -28,9 +29,38 @@ export default function PaidExportersView({ onNavigateTab }) {
   const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'advance', 'approved', 'fully_paid'
   const [selectedDocBooking, setSelectedDocBooking] = useState(null);
   const [actionLoadingId, setActionLoadingId] = useState(null);
+  const [paymentNotice, setPaymentNotice] = useState(null);
 
   useEffect(() => {
     fetchBookings();
+
+    // Connect to Socket.io to listen for real-time payments from Razorpay
+    const socket = io(API_BASE, {
+      transports: ['websocket', 'polling'],
+      reconnectionAttempts: 5
+    });
+
+    socket.on('carrier_payment_notification', (notice) => {
+      console.log('[Socket.io] Real-time payment event received:', notice);
+      setPaymentNotice(notice);
+      setTimeout(() => setPaymentNotice(null), 10000);
+
+      // Auto-update booking in place
+      setBookings(prev => prev.map(b => {
+        if (b.id === notice.bookingId) {
+          return {
+            ...b,
+            paymentStatus: notice.paymentStatus,
+            amountPaid: (b.amountPaid || 0) + notice.amountPaid,
+            balanceAmount: Math.max(0, (b.totalAmount || 0) - ((b.amountPaid || 0) + notice.amountPaid)),
+            transactionId: notice.transactionId
+          };
+        }
+        return b;
+      }));
+    });
+
+    return () => socket.disconnect();
   }, []);
 
   const fetchBookings = async () => {
@@ -192,6 +222,37 @@ export default function PaidExportersView({ onNavigateTab }) {
           <span>Refresh Ledger</span>
         </button>
       </div>
+
+      {/* Real-time Socket.io Payment Notification Banner */}
+      {paymentNotice && (
+        <div className="p-4 bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border border-emerald-300 rounded-2xl flex items-center justify-between text-emerald-900 shadow-sm animate-in slide-in-from-top-2 duration-300">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-black text-base shadow-sm">
+              ₹
+            </div>
+            <div>
+              <div className="font-extrabold text-sm flex items-center gap-2">
+                <span>Real-Time Payment Verified</span>
+                <span className="text-[10px] bg-emerald-600 text-white font-bold px-2 py-0.5 rounded-full uppercase">
+                  Razorpay Standard Checkout
+                </span>
+                <span className="text-[10px] bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded-full">
+                  Socket.io Live
+                </span>
+              </div>
+              <p className="text-xs text-emerald-800 mt-0.5">
+                Exporter <strong>{paymentNotice.exporterName}</strong> just paid <strong>₹{Number(paymentNotice.amountPaid || 0).toLocaleString()}</strong> ({paymentNotice.milestone === 'advance_25' ? '25% Advance Booking Deposit' : '75% Remaining Settlement'}) for shipment <strong>{paymentNotice.bookingId}</strong>.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setPaymentNotice(null)}
+            className="text-emerald-700 hover:text-emerald-950 text-xs font-bold px-3 py-1.5 border border-emerald-200 rounded-lg hover:bg-emerald-100/50 transition-colors cursor-pointer"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
 
       {/* KPI Metrics Strip */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

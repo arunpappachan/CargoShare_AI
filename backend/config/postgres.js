@@ -138,6 +138,23 @@ const initPostgresTables = async () => {
         time VARCHAR(50),
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
+
+      CREATE TABLE IF NOT EXISTS payment_transactions (
+        id VARCHAR(100) PRIMARY KEY,
+        booking_id VARCHAR(50) NOT NULL,
+        razorpay_order_id VARCHAR(100),
+        razorpay_payment_id VARCHAR(100) NOT NULL,
+        razorpay_signature VARCHAR(255),
+        amount NUMERIC NOT NULL,
+        currency VARCHAR(10) DEFAULT 'INR',
+        milestone VARCHAR(50) NOT NULL,
+        status VARCHAR(50) DEFAULT 'captured',
+        payment_method VARCHAR(100) DEFAULT 'Razorpay Standard Checkout',
+        receipt_number VARCHAR(100),
+        carrier_notified BOOLEAN DEFAULT true,
+        metadata JSONB DEFAULT '{}'::jsonb,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
     `);
 
     client.release();

@@ -1,6 +1,73 @@
 const { query, isPostgresConnected } = require('../config/postgres');
 
-let memoryBookings = [];
+let memoryBookings = [
+  {
+    id: 'CS-1001',
+    spaceId: 'SP-5001',
+    route: 'Mumbai (Nhava Sheva/JNPT) → Mundra Port',
+    carrier: 'Oceanic Freight Ltd.',
+    exporterName: 'Apex Textiles SME',
+    cbm: 25,
+    commodity: 'Garments & Apparels',
+    weight: 4200,
+    specialReq: 'Keep dry, Moisture proof packaging',
+    status: 'Pending Confirmation',
+    paymentStatus: 'Advance Paid (25%)',
+    paymentMethod: 'UPI Advance (25%)',
+    amountPaid: 7113,
+    advanceAmount: 7113,
+    balanceAmount: 21337,
+    totalAmount: 28450,
+    transactionId: 'TXN-98421033',
+    date: '2026-10-24',
+    documents: ['Commercial_Invoice_Apex.pdf', 'Packing_List_Apex.pdf', 'Shipping_Bill_EDI.pdf'],
+    createdAt: new Date()
+  },
+  {
+    id: 'CS-1002',
+    spaceId: 'SP-5002',
+    route: 'Chennai Port → Kolkata Port',
+    carrier: 'Oceanic Freight Ltd.',
+    exporterName: 'Bharat Agro Exporters Ltd.',
+    cbm: 18,
+    commodity: 'Organic Basmati Rice (1121 Grade)',
+    weight: 12500,
+    specialReq: 'Food-grade dry container, fumigation cert required',
+    status: 'Approved',
+    paymentStatus: 'Advance Paid (25%)',
+    paymentMethod: 'UPI Advance (25%)',
+    amountPaid: 6200,
+    advanceAmount: 6200,
+    balanceAmount: 18600,
+    totalAmount: 24800,
+    transactionId: 'TXN-77219044',
+    date: '2026-10-23',
+    documents: ['Invoice_Bharat_Agro.pdf', 'Phytosanitary_Cert.pdf', 'Packing_List.pdf'],
+    createdAt: new Date(Date.now() - 86400000)
+  },
+  {
+    id: 'CS-1003',
+    spaceId: 'SP-5001',
+    route: 'Cochin Port → Visakhapatnam Port',
+    carrier: 'Oceanic Freight Ltd.',
+    exporterName: 'Zenith Spices & Commodities',
+    cbm: 32,
+    commodity: 'Cardamom & Black Pepper Lots',
+    weight: 6800,
+    specialReq: 'Temperature regulated 18-22C',
+    status: 'In Transit',
+    paymentStatus: 'Unpaid',
+    paymentMethod: 'Razorpay Standard Checkout',
+    amountPaid: 0,
+    advanceAmount: 9875,
+    balanceAmount: 29625,
+    totalAmount: 39500,
+    transactionId: null,
+    date: '2026-10-22',
+    documents: ['Spices_Board_Invoice.pdf', 'Certificate_of_Origin.pdf', 'Quality_Inspection.pdf'],
+    createdAt: new Date(Date.now() - 172800000)
+  }
+];
 
 class BookingRecord {
   constructor(data) {
@@ -132,9 +199,22 @@ Booking.find = (filter = {}) => {
       const res = await query(sql, params);
       return res.rows.map(r => new BookingRecord(r));
     }
-    return memoryBookings.map(b => new BookingRecord(b));
+    let list = memoryBookings;
+    if (filter.id) {
+      list = list.filter(b => b.id === filter.id);
+    }
+    return list.map(b => new BookingRecord(b));
   })();
   return new QueryChain(p);
+};
+
+Booking.findOne = async (filter = {}) => {
+  const results = await Booking.find(filter);
+  return results && results.length > 0 ? results[0] : null;
+};
+
+Booking.findById = async (id) => {
+  return Booking.findOne({ id });
 };
 
 Booking.create = async (data) => {
