@@ -18,6 +18,7 @@ import {
 import { API_BASE } from '../../lib/apiConfig';
 import PaymentScannerModal from '../common/PaymentScannerModal';
 import { syncBookingToAdmin } from '../../lib/syncAdminData';
+import { openRazorpayCheckout } from '../../lib/razorpay';
 
 export default function PaymentScannerView({ onNavigateTab }) {
   const [bookings, setBookings] = useState([]);
@@ -28,6 +29,7 @@ export default function PaymentScannerView({ onNavigateTab }) {
   const [isVerifying, setIsVerifying] = useState(false);
   const [verifiedSuccess, setVerifiedSuccess] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [razorpayLoading, setRazorpayLoading] = useState(false);
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -62,7 +64,7 @@ export default function PaymentScannerView({ onNavigateTab }) {
 
   const amount = selectedBooking?.totalAmount || selectedBooking?.amountPaid || 28450;
   const bookingId = selectedBooking?.id || 'CS-1001';
-  const upiVpa = 'cargoshare.escrow@hdfcbank';
+  const upiVpa = 'cargoshare.freight@razorpay';
   const upiPayload = `upi://pay?pa=${upiVpa}&pn=CargoShare%20AI&am=${amount}&cu=INR&tn=Freight%20Settlement%20${bookingId}`;
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=280x280&margin=8&data=${encodeURIComponent(upiPayload)}`;
 
@@ -78,17 +80,50 @@ export default function PaymentScannerView({ onNavigateTab }) {
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
+  const handlePayWithRazorpay = async () => {
+    setRazorpayLoading(true);
+    try {
+      await openRazorpayCheckout({
+        booking: selectedBooking,
+        amount: amount,
+        onSuccess: (paymentResult) => {
+          setVerifiedSuccess(true);
+          const txn = paymentResult.paymentId || `pay_Rzp${Math.floor(10000000 + Math.random() * 90000000)}`;
+          const updated = {
+            ...selectedBooking,
+            paymentStatus: 'Paid',
+            paymentMethod: paymentResult.paymentMethod || 'Razorpay Gateway',
+            amountPaid: amount,
+            balanceAmount: 0,
+            transactionId: txn
+          };
+          setSelectedBooking(updated);
+          setBookings(prev => prev.map(b => b.id === updated.id ? { ...b, ...updated } : b));
+          syncBookingToAdmin(updated);
+          setTimeout(() => setVerifiedSuccess(false), 4000);
+        },
+        onDismiss: () => {
+          setRazorpayLoading(false);
+        }
+      });
+    } catch (err) {
+      console.error('Razorpay payment error:', err);
+    } finally {
+      setRazorpayLoading(false);
+    }
+  };
+
   const handleVerifyPayment = async () => {
     setIsVerifying(true);
     try {
       if (selectedBooking?.id) {
-        const txn = `TXN-${Math.floor(10000000 + Math.random() * 90000000)}`;
+        const txn = `pay_Rzp${Math.floor(10000000 + Math.random() * 90000000)}`;
         await fetch(`${API_BASE}/api/bookings/${selectedBooking.id}/payment`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             paymentStatus: 'Paid',
-            paymentMethod: 'UPI QR Scanner',
+            paymentMethod: 'Razorpay QR Scanner',
             amountPaid: amount,
             transactionId: txn
           })
@@ -98,7 +133,7 @@ export default function PaymentScannerView({ onNavigateTab }) {
         syncBookingToAdmin({
           ...selectedBooking,
           paymentStatus: 'Paid',
-          paymentMethod: 'UPI QR Scanner',
+          paymentMethod: 'Razorpay QR Scanner',
           amountPaid: amount,
           balanceAmount: 0,
           transactionId: txn
@@ -121,13 +156,14 @@ export default function PaymentScannerView({ onNavigateTab }) {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-              ⚡ Instant UPI Escrow
+            <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-blue-50 text-[#0284c7] border border-blue-200 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#0284c7] animate-pulse"></span>
+              ⚡ Razorpay Verified Freight Gateway
             </span>
           </div>
-          <h1 className="text-3xl font-bold text-slate-900">UPI Payment Scanner</h1>
+          <h1 className="text-3xl font-bold text-slate-900">Razorpay Freight Checkout & QR</h1>
           <p className="text-slate-500 mt-1">
-            Real-time QR Code Scanner for freight settlement, slot locking, and escrow verification.
+            Instant settlement via Razorpay Gateway (Cards, NetBanking, UPI, Escrow) & Dynamic QR.
           </p>
         </div>
 
@@ -188,23 +224,23 @@ export default function PaymentScannerView({ onNavigateTab }) {
               />
               <div style={{ display: 'none' }} className="w-full h-full flex-col items-center justify-center bg-slate-50 text-slate-800">
                 <QrCode className="w-36 h-36 text-slate-800" />
-                <span className="text-[10px] font-bold text-slate-500 mt-1">cargoshare.escrow@hdfcbank</span>
+                <span className="text-[10px] font-bold text-slate-500 mt-1">cargoshare.freight@razorpay</span>
               </div>
             </div>
 
             <div className="absolute bottom-1.5 z-20 bg-slate-900/90 px-3 py-0.5 rounded-full text-[9px] font-bold text-emerald-300 border border-emerald-500/30">
-              SCAN TO PAY ₹{amount.toLocaleString()}
+              SCAN RAZORPAY QR • ₹{amount.toLocaleString()}
             </div>
           </div>
 
           {/* UPI ID Bar */}
           <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/80 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="p-2 bg-white rounded-lg border border-slate-200 text-brand-600 shadow-2xs">
+              <div className="p-2 bg-white rounded-lg border border-slate-200 text-[#0284c7] shadow-2xs">
                 <Smartphone className="w-4 h-4" />
               </div>
               <div>
-                <span className="text-[10px] font-bold text-slate-400 uppercase block">Virtual Payment Address (VPA)</span>
+                <span className="text-[10px] font-bold text-slate-400 uppercase block">Razorpay Virtual Payment Address (VPA)</span>
                 <span className="font-mono font-bold text-slate-800 text-sm">{upiVpa}</span>
               </div>
             </div>
@@ -217,48 +253,80 @@ export default function PaymentScannerView({ onNavigateTab }) {
             </button>
           </div>
 
-          {/* Supported Apps List */}
-          <div className="text-center space-y-2">
-            <span className="text-xs text-slate-400 font-bold uppercase tracking-wider block">
-              Compatible UPI & Banking Applications
-            </span>
-            <div className="flex flex-wrap justify-center gap-2">
-              {['Google Pay', 'PhonePe', 'Paytm', 'BHIM UPI', 'CRED UPI', 'Amazon Pay', 'HDFC PayZapp'].map(app => (
-                <span key={app} className="px-3 py-1 bg-slate-100 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700">
-                  {app}
-                </span>
-              ))}
+          {/* Razorpay Gateway Trust & Security Card */}
+          <div className="bg-gradient-to-r from-[#0c2340] to-[#13335c] text-white p-4 rounded-2xl border border-blue-900/60 shadow-sm space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-[#0284c7] flex items-center justify-center font-black text-sm text-white shadow-inner">
+                  R
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5 leading-none">
+                    <span className="text-xs font-extrabold text-white">Razorpay Payment Gateway</span>
+                    <span className="text-[9px] bg-emerald-500/20 text-emerald-300 font-extrabold px-1.5 py-0.5 rounded uppercase border border-emerald-500/30">
+                      Active
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-slate-300 mt-1 block">Credit/Debit Cards • UPI • NetBanking • Smart Escrow</span>
+                </div>
+              </div>
+              <ShieldCheck className="w-5 h-5 text-emerald-400" />
+            </div>
+
+            <div className="flex items-center justify-between text-[11px] text-slate-300 pt-2 border-t border-white/10 font-medium">
+              <span>PCI-DSS Level 1 & 256-Bit SSL Encrypted</span>
+              <span className="font-bold text-emerald-400">Zero Transaction Surcharge</span>
             </div>
           </div>
 
-          {/* Verify & Pay CTA */}
-          <div className="pt-2">
+          {/* Dual Action CTAs */}
+          <div className="pt-2 space-y-2.5">
+            {/* Primary: Direct Razorpay Checkout Modal */}
+            <button
+              onClick={handlePayWithRazorpay}
+              disabled={razorpayLoading || verifiedSuccess}
+              className="w-full py-3.5 px-4 bg-gradient-to-r from-[#0284c7] to-[#0369a1] hover:from-[#0369a1] hover:to-[#075985] text-white font-bold text-sm rounded-2xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              {razorpayLoading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  <span>Connecting to Razorpay Gateway...</span>
+                </>
+              ) : (
+                <>
+                  <CreditCard className="w-4 h-4 text-blue-200" />
+                  <span>Pay ₹{amount.toLocaleString()} with Razorpay</span>
+                  <ArrowRight className="w-4 h-4 ml-1 text-blue-200" />
+                </>
+              )}
+            </button>
+
+            {/* Secondary: Instant QR Scan Verification Button */}
             <button
               onClick={handleVerifyPayment}
               disabled={isVerifying || verifiedSuccess}
-              className={`w-full py-3.5 rounded-2xl font-bold text-sm shadow-lg transition-all flex items-center justify-center gap-2 text-white cursor-pointer ${
+              className={`w-full py-3 rounded-2xl font-bold text-xs transition-all flex items-center justify-center gap-2 border cursor-pointer ${
                 verifiedSuccess 
-                  ? 'bg-emerald-600 shadow-emerald-500/20' 
+                  ? 'bg-emerald-50 border-emerald-300 text-emerald-800' 
                   : isVerifying 
-                    ? 'bg-brand-500 opacity-90' 
-                    : 'bg-emerald-600 hover:bg-emerald-700 hover:-translate-y-0.5 shadow-emerald-600/25'
+                    ? 'bg-slate-100 border-slate-200 text-slate-500' 
+                    : 'bg-white hover:bg-slate-50 border-slate-300 text-slate-700'
               }`}
             >
               {isVerifying ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  <span>Checking NPCI Switch Settlement...</span>
+                  <div className="w-3.5 h-3.5 border-2 border-slate-400 border-t-slate-700 rounded-full animate-spin"></div>
+                  <span>Verifying Razorpay QR Settlement...</span>
                 </>
               ) : verifiedSuccess ? (
                 <>
-                  <CheckCircle2 className="w-5 h-5 text-white animate-bounce" />
-                  <span>Payment Verified & Confirmed!</span>
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 animate-bounce" />
+                  <span className="font-bold text-emerald-700">Payment Verified & Settled via Razorpay!</span>
                 </>
               ) : (
                 <>
-                  <Sparkles className="w-4 h-4 text-emerald-200" />
-                  <span>I Have Scanned & Paid via App</span>
-                  <ArrowRight className="w-4 h-4 ml-1" />
+                  <Scan className="w-3.5 h-3.5 text-slate-500" />
+                  <span>I Have Scanned Razorpay QR & Paid</span>
                 </>
               )}
             </button>

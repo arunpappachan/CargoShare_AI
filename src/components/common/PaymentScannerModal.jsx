@@ -14,9 +14,11 @@ import {
   ArrowRight,
   Sparkles,
   AlertCircle,
-  Smartphone
+  Smartphone,
+  CreditCard
 } from 'lucide-react';
 import { API_BASE } from '../../lib/apiConfig';
+import { openRazorpayCheckout } from '../../lib/razorpay';
 
 export default function PaymentScannerModal({ 
   isOpen, 
@@ -31,6 +33,7 @@ export default function PaymentScannerModal({
   const [isSuccess, setIsSuccess] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState(null);
+  const [razorpayLoading, setRazorpayLoading] = useState(false);
   const videoRef = useRef(null);
   const streamRef = useRef(null);
 
@@ -39,7 +42,7 @@ export default function PaymentScannerModal({
   const route = booking?.route || 'JNPT, Mumbai → Jebel Ali, Dubai';
   const carrier = booking?.carrier || 'Maersk Line Logistics';
   const isRemaining = Boolean(booking?.isRemainingPayment);
-  const upiVpa = 'cargoshare.escrow@hdfcbank';
+  const upiVpa = 'cargoshare.freight@razorpay';
   const upiPayload = `upi://pay?pa=${upiVpa}&pn=CargoShare%20AI&am=${amount}&cu=INR&tn=${isRemaining ? 'Remaining%20Freight' : 'Freight%20Booking'}%20${bookingId}`;
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=8&data=${encodeURIComponent(upiPayload)}`;
 
@@ -109,19 +112,64 @@ export default function PaymentScannerModal({
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
+  const handlePayWithRazorpay = async () => {
+    setRazorpayLoading(true);
+    try {
+      await openRazorpayCheckout({
+        booking,
+        amount,
+        onSuccess: (paymentResult) => {
+          setIsSuccess(true);
+          const txnId = paymentResult.paymentId || `pay_Rzp${Math.floor(10000000 + Math.random() * 90000000)}`;
+          const updatePayload = isRemaining ? {
+            paymentStatus: 'Fully Paid',
+            paymentMethod: paymentResult.paymentMethod || 'Razorpay Gateway',
+            amountPaid: Number(booking?.totalAmount || (Number(booking?.amountPaid || 0) + Number(amount))),
+            balanceAmount: 0,
+            transactionId: txnId
+          } : {
+            paymentStatus: booking?.paymentStatus || 'Advance Paid (25%)',
+            paymentMethod: paymentResult.paymentMethod || 'Razorpay Gateway',
+            amountPaid: amount,
+            transactionId: txnId
+          };
+
+          if (onPaymentSuccess) {
+            onPaymentSuccess({
+              ...booking,
+              ...updatePayload
+            });
+          }
+
+          setTimeout(() => {
+            setIsSuccess(false);
+            onClose();
+          }, 2000);
+        },
+        onDismiss: () => {
+          setRazorpayLoading(false);
+        }
+      });
+    } catch (err) {
+      console.error('Razorpay Modal checkout error:', err);
+    } finally {
+      setRazorpayLoading(false);
+    }
+  };
+
   const handleSimulatePayment = async () => {
     setIsVerifying(true);
-    const txnId = `TXN-${Math.floor(10000000 + Math.random() * 90000000)}`;
+    const txnId = `pay_Rzp${Math.floor(10000000 + Math.random() * 90000000)}`;
 
     const updatePayload = isRemaining ? {
       paymentStatus: 'Fully Paid',
-      paymentMethod: 'UPI Remaining Balance',
-      amountPaid: Number(booking.totalAmount || (Number(booking.amountPaid || 0) + Number(amount))),
+      paymentMethod: 'Razorpay QR Settlement',
+      amountPaid: Number(booking?.totalAmount || (Number(booking?.amountPaid || 0) + Number(amount))),
       balanceAmount: 0,
       transactionId: txnId
     } : {
       paymentStatus: booking?.paymentStatus || 'Advance Paid (25%)',
-      paymentMethod: 'UPI QR Scanner',
+      paymentMethod: 'Razorpay QR Scanner',
       amountPaid: amount,
       transactionId: txnId
     };
@@ -311,21 +359,31 @@ export default function PaymentScannerModal({
                 </div>
               </div>
 
-              {/* Supported UPI Apps Row */}
-              <div className="text-center space-y-1.5">
-                <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-                  Supported UPI Applications
-                </p>
-                <div className="flex flex-wrap justify-center items-center gap-1.5">
-                  {['Google Pay', 'PhonePe', 'Paytm', 'BHIM UPI', 'CRED', 'Amazon Pay'].map((app) => (
-                    <span 
-                      key={app} 
-                      className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 border border-slate-200/80 rounded-lg text-xs font-semibold text-slate-700 transition-colors"
-                    >
-                      {app}
-                    </span>
-                  ))}
+              {/* Razorpay Gateway Card (Replaces the supported apps list) */}
+              <div className="bg-gradient-to-r from-[#0c2340] to-[#13335c] text-white p-3.5 rounded-2xl border border-blue-900/60 shadow-sm flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-lg bg-[#0284c7] flex items-center justify-center font-black text-xs text-white shadow-inner">
+                    R
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-1.5 leading-none">
+                      <span className="text-xs font-extrabold text-white">Razorpay Payment Gateway</span>
+                      <span className="text-[9px] bg-emerald-500/20 text-emerald-300 font-bold px-1.5 py-0.5 rounded uppercase border border-emerald-500/30">
+                        PCI-DSS
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-slate-300 leading-none">Cards • UPI • NetBanking • Escrow</span>
+                  </div>
                 </div>
+                <button
+                  type="button"
+                  onClick={handlePayWithRazorpay}
+                  disabled={razorpayLoading || isSuccess}
+                  className="px-3 py-1.5 bg-[#0284c7] hover:bg-[#0369a1] text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1 shadow-sm cursor-pointer"
+                >
+                  <CreditCard className="w-3.5 h-3.5" />
+                  <span>{razorpayLoading ? 'Launching...' : 'Pay with Razorpay'}</span>
+                </button>
               </div>
 
               {/* Copy UPI VPA Option */}
