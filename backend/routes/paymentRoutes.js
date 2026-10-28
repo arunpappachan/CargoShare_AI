@@ -9,8 +9,13 @@ const PaymentTransaction = require('../models/PaymentTransaction');
 // Razorpay SDK Configuration (Strict Test Mode Enforcement)
 // -------------------------------------------------------------
 const getRazorpayCredentials = () => {
-  const keyId = process.env.RAZORPAY_KEY_ID || '';
-  const keySecret = process.env.RAZORPAY_KEY_SECRET || '';
+  let keyId = (process.env.RAZORPAY_KEY_ID || '').trim();
+  const keySecret = (process.env.RAZORPAY_KEY_SECRET || '').trim();
+
+  // Automatically clean any accidental double prefixes
+  if (keyId.startsWith('rzp_test_rzp_test_')) {
+    keyId = keyId.replace('rzp_test_rzp_test_', 'rzp_test_');
+  }
 
   // Strictly enforce Test Mode: Reject live API credentials
   if (keyId.startsWith('rzp_live_')) {
@@ -71,7 +76,7 @@ router.get('/razorpay/key', (req, res) => {
     const { keyId, isTestMode } = getRazorpayCredentials();
     res.json({
       status: 'success',
-      keyId: keyId || 'rzp_test_rzp_test_TtP2GeshKU28ti',
+      keyId: keyId || 'rzp_test_TtP2GeshKU28ti',
       isTestMode: isTestMode || true,
       mode: 'test'
     });

@@ -40,7 +40,11 @@ export const openRazorpayCheckout = async ({
     // 1. Fetch public Razorpay Key & Test Mode status from backend
     const keyRes = await fetch(`${API_BASE}/api/payments/razorpay/key`).catch(() => null);
     const keyData = keyRes ? await keyRes.json() : null;
-    const razorpayKey = keyData?.keyId || 'rzp_test_rzp_test_TtP2GeshKU28ti';
+    let rawKey = keyData?.keyId || 'rzp_test_TtP2GeshKU28ti';
+    if (rawKey.startsWith('rzp_test_rzp_test_')) {
+      rawKey = rawKey.replace('rzp_test_rzp_test_', 'rzp_test_');
+    }
+    const razorpayKey = rawKey;
 
     // 2. Create order on backend (amount calculated strictly on the backend)
     const orderRes = await fetch(`${API_BASE}/api/payments/razorpay/create-order`, {
