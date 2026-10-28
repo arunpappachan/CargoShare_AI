@@ -52,7 +52,14 @@ export const openRazorpayCheckout = async ({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         bookingId: bookingId,
-        milestone: milestone
+        milestone: milestone,
+        totalAmount: booking?.totalAmount,
+        advanceAmount: booking?.advanceAmount,
+        balanceAmount: booking?.balanceAmount,
+        cbm: booking?.cbm,
+        route: booking?.route,
+        carrier: booking?.carrier,
+        exporterName: user?.company || user?.name || booking?.exporterName
       })
     });
 

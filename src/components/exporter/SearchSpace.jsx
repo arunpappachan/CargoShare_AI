@@ -130,12 +130,16 @@ export default function SearchSpace() {
       const exporterEmail = user?.email || `logistics@${exporterName.toLowerCase().replace(/[^a-z0-9]/g, '')}.com`;
       const carrierVessel = bookingModal.vessel || 'MSC Oscar';
 
+      const newBookingId = `CS-${Date.now().toString().slice(-4)}`;
+
       // Launch official Razorpay Standard Checkout popup modal
       const dummyBooking = {
-        id: `CS-${Date.now().toString().slice(-4)}`,
+        id: newBookingId,
         totalAmount: grandTotal,
         advanceAmount: advanceAmount,
         balanceAmount: balanceAmount,
+        amountToPay: amountToPayNow,
+        cbm: bookedCbm,
         route: `${portsMap[bookingModal.origin] || bookingModal.origin} → ${portsMap[bookingModal.dest] || bookingModal.dest}`,
         carrier: bookingModal.carrier,
         exporterName: exporterName
@@ -147,14 +151,17 @@ export default function SearchSpace() {
         user: user
       });
 
-      if (rzpResult && rzpResult.paymentId) {
-        activeTransactionId = rzpResult.paymentId;
-      } else if (rzpResult && rzpResult.dismissed) {
+      if (!rzpResult || rzpResult.dismissed) {
         setIsProcessingPayment(false);
         return;
       }
 
+      if (rzpResult.paymentId) {
+        activeTransactionId = rzpResult.paymentId;
+      }
+
       const payload = {
+        id: newBookingId,
         spaceId: bookingModal.id,
         route: `${portsMap[bookingModal.origin] || bookingModal.origin} → ${portsMap[bookingModal.dest] || bookingModal.dest}`,
         carrier: bookingModal.carrier,
@@ -174,17 +181,18 @@ export default function SearchSpace() {
         totalAmount: grandTotal,
         documentName: documentName || 'Commercial_Invoice.pdf',
         documents: [documentName || 'Commercial_Invoice.pdf', 'Packing_List.pdf', 'Shipping_Bill_EDI.pdf'],
-        transactionId: activeTransactionId
+        transactionId: activeTransactionId,
+        receipt: rzpResult.receipt
       };
 
       const res = await fetch(`${API_BASE}/api/bookings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
-      });
+      }).catch(() => null);
       
-      const json = await res.json();
-      const savedData = (json && json.data) ? json.data : { ...payload, id: `CS-${Date.now().toString().slice(-4)}` };
+      const json = res ? await res.json().catch(() => null) : null;
+      const savedData = (json && json.data) ? json.data : payload;
       
       // Automatically store details of exporter, carrier, booking, and commission to Admin Dashboard!
       syncBookingToAdmin(savedData);
@@ -192,36 +200,8 @@ export default function SearchSpace() {
       setConfirmedBooking(savedData);
       setBookingStep(3);
     } catch (err) {
-      console.warn('Booking post error, using local fallback:', err);
-      const fallbackConfirmed = {
-        id: `CS-${Date.now().toString().slice(-4)}`,
-        spaceId: bookingModal.id,
-        route: `${portsMap[bookingModal.origin] || bookingModal.origin} → ${portsMap[bookingModal.dest] || bookingModal.dest}`,
-        carrier: bookingModal.carrier,
-        vessel: bookingModal.vessel || 'MSC Oscar',
-        cbm: bookedCbm,
-        commodity: commodity || 'General Cargo',
-        weight: Number(weight) || 2000,
-        specialReq: specialReq || 'Standard handling',
-        exporterName: user?.company || user?.name || 'Apex Exports SME',
-        email: user?.email || 'logistics@apexexports.com',
-        status: 'Pending Confirmation',
-        paymentStatus: 'Advance Paid (25%)',
-        paymentMethod: paymentMethodNames[paymentMethod] || 'UPI Advance (25%)',
-        amountPaid: advanceAmount,
-        advanceAmount: advanceAmount,
-        balanceAmount: balanceAmount,
-        totalAmount: grandTotal,
-        documentName: documentName || 'Commercial_Invoice.pdf',
-        documents: [documentName || 'Commercial_Invoice.pdf', 'Packing_List.pdf', 'Shipping_Bill_EDI.pdf'],
-        transactionId: generatedTxnId
-      };
-      
-      // Automatically store details of exporter, carrier, booking, and commission to Admin Dashboard!
-      syncBookingToAdmin(fallbackConfirmed);
-
-      setConfirmedBooking(fallbackConfirmed);
-      setBookingStep(3);
+      console.error('Razorpay payment error:', err);
+      alert(`Razorpay Checkout Notice: ${err.message || 'Payment could not be completed. Please try again.'}`);
     } finally {
       setIsProcessingPayment(false);
     }

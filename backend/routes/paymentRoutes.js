@@ -98,16 +98,62 @@ router.post('/razorpay/create-order', enforceTestMode, async (req, res) => {
     }
 
     // Retrieve booking from database / model
-    const booking = await Booking.findById(bookingId);
-    if (!booking) {
-      return res.status(404).json({ status: 'error', message: `Booking ${bookingId} not found.` });
-    }
+    let booking = await Booking.findById(bookingId);
 
     // Backend calculation of total, advance (25%), and remaining (75%)
-    const totalAmount = Number(booking.totalAmount || (booking.cbm ? Math.round(booking.cbm * 520 * 1.18 + 1650) : 28450));
-    const advanceAmount = Number(booking.advanceAmount || Math.round(totalAmount * 0.25));
-    const currentPaid = Number(booking.amountPaid || 0);
-    const balanceAmount = Number(booking.balanceAmount !== undefined ? booking.balanceAmount : Math.max(0, totalAmount - currentPaid));
+    const totalAmount = Number(
+      booking?.totalAmount ||
+      req.body.totalAmount ||
+      req.body.amount ||
+      (req.body.cbm ? Math.round(req.body.cbm * 520 * 1.18 + 1650) : 28450)
+    );
+    const advanceAmount = Number(
+      booking?.advanceAmount ||
+      req.body.advanceAmount ||
+      Math.round(totalAmount * 0.25)
+    );
+    const currentPaid = Number(booking?.amountPaid || req.body.amountPaid || 0);
+    const balanceAmount = Number(
+      booking?.balanceAmount !== undefined
+        ? booking.balanceAmount
+        : req.body.balanceAmount !== undefined
+        ? req.body.balanceAmount
+        : Math.max(0, totalAmount - currentPaid)
+    );
+
+    // If booking record does not exist yet (e.g. checkout on new slot reservation), create it
+    if (!booking) {
+      try {
+        booking = await Booking.create({
+          id: bookingId,
+          route: req.body.route || 'Maritime Route',
+          carrier: req.body.carrier || 'Oceanic Freight Ltd.',
+          exporterName: req.body.exporterName || 'Global Exports SME',
+          cbm: req.body.cbm || 10,
+          commodity: req.body.commodity || 'General Cargo',
+          totalAmount: totalAmount,
+          advanceAmount: advanceAmount,
+          balanceAmount: balanceAmount,
+          amountPaid: 0,
+          status: 'Pending Confirmation',
+          paymentStatus: 'Unpaid'
+        });
+      } catch (cErr) {
+        booking = {
+          id: bookingId,
+          route: req.body.route || 'Maritime Route',
+          carrier: req.body.carrier || 'Oceanic Freight Ltd.',
+          exporterName: req.body.exporterName || 'Global Exports SME',
+          cbm: req.body.cbm || 10,
+          totalAmount: totalAmount,
+          advanceAmount: advanceAmount,
+          balanceAmount: balanceAmount,
+          amountPaid: 0,
+          status: 'Pending Confirmation',
+          paymentStatus: 'Unpaid'
+        };
+      }
+    }
 
     // Determine target milestone: 'advance_25' or 'remaining_75'
     let targetMilestone = milestone;
@@ -232,9 +278,39 @@ router.post('/razorpay/verify-payment', enforceTestMode, async (req, res) => {
     }
 
     // Fetch booking
-    const booking = await Booking.findById(bookingId);
+    let booking = await Booking.findById(bookingId);
     if (!booking) {
-      return res.status(404).json({ status: 'error', message: `Booking ${bookingId} not found.` });
+      const fallbackTotal = Number(req.body.totalAmount || 28450);
+      const fallbackAdvance = Number(req.body.advanceAmount || Math.round(fallbackTotal * 0.25));
+      try {
+        booking = await Booking.create({
+          id: bookingId,
+          route: req.body.route || 'Maritime Route',
+          carrier: req.body.carrier || 'Oceanic Freight Ltd.',
+          exporterName: req.body.exporterName || 'Global Exports SME',
+          cbm: req.body.cbm || 10,
+          totalAmount: fallbackTotal,
+          advanceAmount: fallbackAdvance,
+          balanceAmount: fallbackTotal - fallbackAdvance,
+          amountPaid: 0,
+          status: 'Pending Confirmation',
+          paymentStatus: 'Unpaid'
+        });
+      } catch (cErr) {
+        booking = {
+          id: bookingId,
+          route: req.body.route || 'Maritime Route',
+          carrier: req.body.carrier || 'Oceanic Freight Ltd.',
+          exporterName: req.body.exporterName || 'Global Exports SME',
+          cbm: req.body.cbm || 10,
+          totalAmount: fallbackTotal,
+          advanceAmount: fallbackAdvance,
+          balanceAmount: fallbackTotal - fallbackAdvance,
+          amountPaid: 0,
+          status: 'Pending Confirmation',
+          paymentStatus: 'Unpaid'
+        };
+      }
     }
 
     // Verify HMAC-SHA256 signature if signature & secret exist
