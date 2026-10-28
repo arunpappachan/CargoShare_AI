@@ -196,7 +196,7 @@ CREATE TABLE documents (
 ### Module 1: Exporter Dashboard (`/dashboard/exporter`)
 1. **Search Space:** Exporters select origin port (e.g. Nhava Sheva/JNPT), destination port (Mundra, Dubai), sailing date, and required volume in CBM.
 2. **Instant Price Calculation:** Calculates total freight cost based on per-CBM pricing plus standard 18% maritime tax, displaying the 25% advance token split.
-3. **UPI Payment Scanner Modal:** Opens a dynamic UPI QR Code scanner allowing instant advance token payment simulation with a mock transaction ID (`TXN-...`).
+3. **Razorpay Standard Checkout:** Integrated official Razorpay Checkout popup supporting cards, UPI, and NetBanking with cryptographic signature verification and automated receipts.
 4. **Shipment Tracking Tracker:** Visual milestone tracker showing *Pending Confirmation → Approved → In Transit → Delivered*.
 5. **Trade Documents:** Upload and track mandatory trade paperwork (Commercial Invoice, Packing List, Shipping Bill EDI).
 6. **Live Carrier Chat Widget:** Socket.io chat widget to communicate directly with shipping lines.

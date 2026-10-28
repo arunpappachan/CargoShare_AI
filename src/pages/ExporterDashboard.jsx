@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { Search, List, User, Ship, LogOut, MapPin, FileText, Box, TrendingDown, Clock, ShieldCheck, Scan } from 'lucide-react';
+import { Search, List, User, Ship, LogOut, MapPin, FileText, Box, TrendingDown, Clock, ShieldCheck } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import SearchSpace from '../components/exporter/SearchSpace';
 import BookingsList from '../components/exporter/BookingsList';
 import ShipmentTracking from '../components/exporter/ShipmentTracking';
 import DocumentManagement from '../components/exporter/DocumentManagement';
-import PaymentScannerView from '../components/exporter/PaymentScannerView';
 import Profile from './Profile';
 import SidebarNav from '../components/common/SidebarNav';
 import CountUp from '../components/common/CountUp';
@@ -15,7 +14,6 @@ import { useAuth } from '../context/AuthContext';
 const NAV_ITEMS = [
   { key: 'search', id: 'search', label: 'Search Space', icon: Search },
   { key: 'bookings', id: 'bookings', label: 'My Bookings', icon: List, badge: 4 },
-  { key: 'payments', id: 'payments', label: 'Payment Scanner', icon: Scan },
   { key: 'tracking', id: 'tracking', label: 'Track Cargo', icon: MapPin },
   { key: 'documents', id: 'documents', label: 'Docs & Customs', icon: FileText },
   { key: 'profile', id: 'profile', label: 'Profile', icon: User },
@@ -150,7 +148,6 @@ export default function ExporterDashboard() {
 
           {activeTab === 'search' && <SearchSpace />}
           {activeTab === 'bookings' && <BookingsList onNavigateTab={handleNavigateTab} />}
-          {activeTab === 'payments' && <PaymentScannerView onNavigateTab={handleNavigateTab} />}
           {activeTab === 'tracking' && <ShipmentTracking initialTrackingId={selectedTrackingId} />}
           {activeTab === 'documents' && <DocumentManagement />}
 

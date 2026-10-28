@@ -129,11 +129,11 @@ export default function BookingsList({ onNavigateTab }) {
       return (
         <button 
           onClick={() => setScannerBooking(booking)}
-          className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-bold rounded-full bg-amber-50 text-amber-700 border border-amber-300 hover:bg-amber-100 transition-colors animate-pulse cursor-pointer shadow-xs"
-          title="Click to open QR Code Payment Scanner"
+          className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-bold rounded-full bg-blue-50 text-blue-700 border border-blue-300 hover:bg-blue-100 transition-colors animate-pulse cursor-pointer shadow-xs"
+          title="Click to pay advance via Razorpay"
         >
-          <Scan className="w-3 h-3 text-amber-600" />
-          <span>Scan to Pay Advance</span>
+          <CreditCard className="w-3 h-3 text-[#0284c7]" />
+          <span>Pay Advance via Razorpay</span>
         </button>
       );
     }
@@ -141,11 +141,10 @@ export default function BookingsList({ onNavigateTab }) {
       <button 
         onClick={() => setScannerBooking(booking)}
         className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-bold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 hover:border-emerald-300 transition-colors cursor-pointer group shadow-xs"
-        title="Payment Verified • Click to open Payment Scanner"
+        title="Payment Verified • Click to view Razorpay receipt"
       >
         <CheckCircle className="w-3 h-3 text-emerald-600" />
-        <span>Fully Paid • {method.includes('UPI') ? 'UPI' : (method.includes('Card') ? 'Card' : method)}</span>
-        <Scan className="w-3 h-3 text-emerald-600 opacity-70 group-hover:opacity-100" />
+        <span>Fully Paid • Razorpay</span>
       </button>
     );
   };
@@ -462,12 +461,12 @@ export default function BookingsList({ onNavigateTab }) {
         </div>
         <button
           onClick={() => setScannerBooking(activeBookings[0] || pastBookings[0] || { id: 'CS-1001', totalAmount: 24850, carrier: 'Maersk Line Logistics', route: 'JNPT Mumbai → Jebel Ali' })}
-          className="px-5 py-2.5 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-2xl font-bold text-sm shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center gap-2.5 cursor-pointer"
+          className="px-5 py-2.5 bg-gradient-to-r from-[#0284c7] via-[#0369a1] to-[#0c2340] hover:from-[#0369a1] hover:to-[#0284c7] text-white rounded-2xl font-bold text-sm shadow-md hover:shadow-lg transition-all flex items-center gap-2.5 cursor-pointer"
         >
-          <div className="p-1 bg-white/20 rounded-lg">
-            <Scan className="w-4 h-4 text-white animate-pulse" />
+          <div className="w-6 h-6 rounded-lg bg-white/20 flex items-center justify-center font-black text-xs text-white">
+            R
           </div>
-          <span>Open UPI Payment Scanner</span>
+          <span>Razorpay Freight Checkout</span>
         </button>
       </div>
 
@@ -706,7 +705,7 @@ export default function BookingsList({ onNavigateTab }) {
           onClose={() => setActiveChatBooking(null)}
         />
       )}
-      {/* UPI Payment Scanner Modal */}
+      {/* Razorpay Standard Checkout Modal */}
       {scannerBooking && (
         <PaymentScannerModal
           isOpen={!!scannerBooking}

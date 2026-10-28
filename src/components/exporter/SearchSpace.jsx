@@ -53,16 +53,8 @@ export default function SearchSpace() {
   const [specialReq, setSpecialReq] = useState('');
   const [documentName, setDocumentName] = useState('');
 
-  // Payment Options Form State
-  const [paymentMethod, setPaymentMethod] = useState('razorpay'); // 'razorpay' | 'card' | 'escrow' | 'wire' | 'advance'
-  const [upiId, setUpiId] = useState('exporter@okhdfcbank');
-  const [showUpiQr, setShowUpiQr] = useState(true);
-  const [cardNumber, setCardNumber] = useState('4532 8921 7843 9021');
-
-  const [cardExpiry, setCardExpiry] = useState('08/29');
-  const [cardCvv, setCardCvv] = useState('382');
-  const [cardName, setCardName] = useState('Global Exports SME');
-  const [wireUtr, setWireUtr] = useState('');
+  // Payment Gateway State (Razorpay Exclusive)
+  const paymentMethod = 'razorpay';
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [confirmedBooking, setConfirmedBooking] = useState(null);
 
@@ -129,15 +121,7 @@ export default function SearchSpace() {
     const balanceAmount = grandTotal - advanceAmount;
     const amountToPayNow = advanceAmount; // 25% Advance required to reserve slot
 
-    const paymentMethodNames = {
-      razorpay: 'Razorpay Standard Checkout (25% Advance)',
-      upi: 'Razorpay UPI (25% Advance)',
-      card: 'Credit/Debit Card (25% Advance)',
-      escrow: 'CargoShare Smart Escrow (25% Advance)',
-      wire: 'B2B Bank Wire (25% Advance)',
-      advance: '25% Slot Advance Deposit'
-    };
-
+    const paymentMethodName = 'Razorpay Standard Checkout (25% Advance)';
     const generatedTxnId = `TXN-${Math.floor(10000000 + Math.random() * 90000000)}`;
     let activeTransactionId = generatedTxnId;
 
@@ -146,32 +130,28 @@ export default function SearchSpace() {
       const exporterEmail = user?.email || `logistics@${exporterName.toLowerCase().replace(/[^a-z0-9]/g, '')}.com`;
       const carrierVessel = bookingModal.vessel || 'MSC Oscar';
 
-      // If Razorpay is selected, launch official Razorpay Standard Checkout popup
-      if (paymentMethod === 'razorpay') {
-        const dummyBooking = {
-          id: `CS-${Date.now().toString().slice(-4)}`,
-          totalAmount: grandTotal,
-          advanceAmount: advanceAmount,
-          balanceAmount: balanceAmount,
-          route: `${portsMap[bookingModal.origin] || bookingModal.origin} → ${portsMap[bookingModal.dest] || bookingModal.dest}`,
-          carrier: bookingModal.carrier,
-          exporterName: exporterName
-        };
+      // Launch official Razorpay Standard Checkout popup modal
+      const dummyBooking = {
+        id: `CS-${Date.now().toString().slice(-4)}`,
+        totalAmount: grandTotal,
+        advanceAmount: advanceAmount,
+        balanceAmount: balanceAmount,
+        route: `${portsMap[bookingModal.origin] || bookingModal.origin} → ${portsMap[bookingModal.dest] || bookingModal.dest}`,
+        carrier: bookingModal.carrier,
+        exporterName: exporterName
+      };
 
-        const rzpResult = await openRazorpayCheckout({
-          booking: dummyBooking,
-          milestone: 'advance_25',
-          user: user
-        });
+      const rzpResult = await openRazorpayCheckout({
+        booking: dummyBooking,
+        milestone: 'advance_25',
+        user: user
+      });
 
-        if (rzpResult && rzpResult.paymentId) {
-          activeTransactionId = rzpResult.paymentId;
-        } else if (rzpResult && rzpResult.dismissed) {
-          setIsProcessingPayment(false);
-          return;
-        }
-      } else {
-        await new Promise(resolve => setTimeout(resolve, 800));
+      if (rzpResult && rzpResult.paymentId) {
+        activeTransactionId = rzpResult.paymentId;
+      } else if (rzpResult && rzpResult.dismissed) {
+        setIsProcessingPayment(false);
+        return;
       }
 
       const payload = {
@@ -187,14 +167,14 @@ export default function SearchSpace() {
         email: exporterEmail,
         status: 'Pending Confirmation',
         paymentStatus: 'Advance Paid (25%)',
-        paymentMethod: paymentMethodNames[paymentMethod] || 'Razorpay Standard Checkout (25% Advance)',
+        paymentMethod: paymentMethodName,
         amountPaid: advanceAmount,
         advanceAmount: advanceAmount,
         balanceAmount: balanceAmount,
         totalAmount: grandTotal,
         documentName: documentName || 'Commercial_Invoice.pdf',
         documents: [documentName || 'Commercial_Invoice.pdf', 'Packing_List.pdf', 'Shipping_Bill_EDI.pdf'],
-        transactionId: wireUtr.trim() ? `UTR-${wireUtr.trim()}` : activeTransactionId
+        transactionId: activeTransactionId
       };
 
       const res = await fetch(`${API_BASE}/api/bookings`, {
@@ -746,275 +726,58 @@ export default function SearchSpace() {
                       </div>
                     </div>
 
-                    {/* Payment Options Grid / Selector */}
-                    <div>
-                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-3">
-                        Choose Payment Method
-                      </label>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        
-                        {/* Option 1: Razorpay Gateway */}
-                        <div 
-                          onClick={() => setPaymentMethod('razorpay')}
-                          className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between ${
-                            paymentMethod === 'razorpay'
-                              ? 'border-[#0284c7] bg-blue-50/50 shadow-sm ring-2 ring-[#0284c7]/20'
-                              : 'border-slate-200 hover:border-slate-300 bg-white'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 rounded-lg bg-[#0284c7] text-white flex items-center justify-center font-black text-sm shadow-xs">
-                                R
-                              </div>
-                              <span className="font-bold text-slate-900 text-sm">Razorpay Checkout</span>
-                            </div>
-                            <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                              0% Fee • Instant
-                            </span>
-                          </div>
-                          <p className="text-[11px] text-slate-500">Cards, UPI (GPay/PhonePe), NetBanking & Escrow</p>
-                        </div>
-
-                        {/* Option 2: Cards */}
-                        <div 
-                          onClick={() => setPaymentMethod('card')}
-                          className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between ${
-                            paymentMethod === 'card'
-                              ? 'border-brand-600 bg-brand-50/40 shadow-sm'
-                              : 'border-slate-200 hover:border-slate-300 bg-white'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs">
-                                <CreditCard className="w-4 h-4" />
-                              </div>
-                              <span className="font-bold text-slate-900 text-sm">Credit / Debit Card</span>
-                            </div>
-                            <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
-                              Visa / MC / RuPay
-                            </span>
-                          </div>
-                          <p className="text-[11px] text-slate-500">Razorpay / Stripe Gateway Integration</p>
-                        </div>
-
-                        {/* Option 3: Smart Escrow */}
-                        <div 
-                          onClick={() => setPaymentMethod('escrow')}
-                          className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between ${
-                            paymentMethod === 'escrow'
-                              ? 'border-brand-600 bg-brand-50/40 shadow-sm'
-                              : 'border-slate-200 hover:border-slate-300 bg-white'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs">
-                                <ShieldCheck className="w-4 h-4" />
-                              </div>
-                              <span className="font-bold text-slate-900 text-sm">CargoShare Escrow</span>
-                            </div>
-                            <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
-                              Protected
-                            </span>
-                          </div>
-                          <p className="text-[11px] text-slate-500">Released only upon port loading confirmation</p>
-                        </div>
-
-                        {/* Option 4: Bank Wire */}
-                        <div 
-                          onClick={() => setPaymentMethod('wire')}
-                          className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between ${
-                            paymentMethod === 'wire'
-                              ? 'border-brand-600 bg-brand-50/40 shadow-sm'
-                              : 'border-slate-200 hover:border-slate-300 bg-white'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs">
-                                <Landmark className="w-4 h-4" />
-                              </div>
-                              <span className="font-bold text-slate-900 text-sm">B2B Bank Wire</span>
-                            </div>
-                            <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
-                              RTGS / NEFT
-                            </span>
-                          </div>
-                          <p className="text-[11px] text-slate-500">Direct corporate bank account transfer</p>
-                        </div>
-
-                        {/* Option 5: 25% Advance */}
-                        <div 
-                          onClick={() => setPaymentMethod('advance')}
-                          className={`col-span-1 sm:col-span-2 p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between ${
-                            paymentMethod === 'advance'
-                              ? 'border-brand-600 bg-brand-50/40 shadow-sm'
-                              : 'border-slate-200 hover:border-slate-300 bg-white'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between mb-1">
-                            <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-xs">
-                                25%
-                              </div>
-                              <div>
-                                <span className="font-bold text-slate-900 text-sm">Milestone Payment (25% Slot Lock)</span>
-                                <p className="text-[11px] text-slate-500">Pay ₹{advanceAmount.toLocaleString()} now • Balance ₹{balanceAmount.toLocaleString()} upon vessel gate-in</p>
-                              </div>
-                            </div>
-                            <span className="text-xs font-bold text-purple-700 bg-purple-50 px-2.5 py-1 rounded-full">
-                              Pay ₹{advanceAmount.toLocaleString()}
-                            </span>
-                          </div>
-                        </div>
-
+                    {/* Exclusive Payment Gateway: Razorpay Standard Checkout */}
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
+                          Payment Gateway (Razorpay Exclusive)
+                        </label>
+                        <span className="text-[10px] font-extrabold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                          Official Gateway • Test Mode
+                        </span>
                       </div>
-                    </div>
 
-                    {/* Method Details Panel */}
-                    <div className="bg-slate-50/80 p-4 rounded-2xl border border-slate-200 space-y-3">
-                      
                       {/* Razorpay Standard Checkout Gateway Card */}
-                      {paymentMethod === 'razorpay' && (
-                        <div className="bg-gradient-to-r from-[#0c2340] via-[#13335c] to-[#0284c7] text-white p-5 rounded-2xl border border-blue-900/60 shadow-md space-y-4">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-white font-black text-xl shadow-inner">
-                                R
-                              </div>
-                              <div>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-sm font-extrabold text-white">Razorpay Standard Checkout</span>
-                                  <span className="text-[10px] bg-emerald-500/30 text-emerald-200 font-bold px-2 py-0.5 rounded-full uppercase border border-emerald-400/30">
-                                    Test Mode Active
-                                  </span>
-                                </div>
-                                <span className="text-xs text-slate-300 mt-0.5 block">
-                                  Cards (Visa, Mastercard, RuPay), UPI (GPay, PhonePe, Paytm), NetBanking (50+ Banks)
-                                </span>
-                              </div>
-                            </div>
-                            <ShieldCheck className="w-6 h-6 text-emerald-400" />
-                          </div>
-
-                          <div className="p-3.5 bg-white/10 rounded-xl backdrop-blur-xs flex items-center justify-between text-xs font-medium border border-white/10">
-                            <span className="text-slate-200">Amount Due for 25% Advance Booking:</span>
-                            <span className="text-xl font-black text-emerald-300">₹{amountToPayNow.toLocaleString()}</span>
-                          </div>
-
-                          <div className="flex items-center justify-between text-[11px] text-slate-300 pt-1 font-medium">
-                            <span>PCI-DSS Level 1 & 256-Bit SSL Encrypted</span>
-                            <span className="text-emerald-300 font-bold">Zero Transaction Surcharge</span>
-                          </div>
-                        </div>
-                      )}
-
-
-                      {/* Card Details */}
-                      {paymentMethod === 'card' && (
-                        <div className="space-y-3">
-                          <div>
-                            <label className="text-xs font-bold text-slate-700 uppercase block mb-1">Cardholder Name</label>
-                            <input 
-                              type="text"
-                              value={cardName}
-                              onChange={(e) => setCardName(e.target.value)}
-                              placeholder="Apex Exports SME"
-                              className="w-full px-4 py-2 bg-white rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
-                              required
-                            />
-                          </div>
-                          <div className="grid grid-cols-3 gap-3">
-                            <div className="col-span-2">
-                              <label className="text-xs font-bold text-slate-700 uppercase block mb-1">Card Number</label>
-                              <input 
-                                type="text"
-                                value={cardNumber}
-                                onChange={(e) => setCardNumber(e.target.value)}
-                                placeholder="4532 8921 7843 9021"
-                                className="w-full px-4 py-2 bg-white rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
-                                required
-                              />
+                      <div className="bg-gradient-to-br from-[#0c2340] via-[#13335c] to-[#0284c7] text-white p-5 rounded-3xl border border-blue-900/60 shadow-lg space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-white font-black text-2xl shadow-inner">
+                              R
                             </div>
                             <div>
-                              <label className="text-xs font-bold text-slate-700 uppercase block mb-1">Expiry & CVV</label>
-                              <div className="flex gap-2">
-                                <input 
-                                  type="text"
-                                  value={cardExpiry}
-                                  onChange={(e) => setCardExpiry(e.target.value)}
-                                  placeholder="MM/YY"
-                                  className="w-1/2 px-2 py-2 bg-white rounded-xl border border-slate-200 text-sm text-center focus:ring-2 focus:ring-brand-500 outline-none"
-                                  required
-                                />
-                                <input 
-                                  type="password"
-                                  value={cardCvv}
-                                  onChange={(e) => setCardCvv(e.target.value)}
-                                  placeholder="CVV"
-                                  maxLength={4}
-                                  className="w-1/2 px-2 py-2 bg-white rounded-xl border border-slate-200 text-sm text-center focus:ring-2 focus:ring-brand-500 outline-none"
-                                  required
-                                />
+                              <div className="flex items-center gap-2">
+                                <span className="text-base font-extrabold text-white">Razorpay Standard Checkout</span>
+                                <span className="text-[10px] bg-emerald-500/30 text-emerald-200 font-bold px-2 py-0.5 rounded-full uppercase border border-emerald-400/30">
+                                  PCI-DSS L1
+                                </span>
                               </div>
+                              <span className="text-xs text-slate-300 mt-0.5 block">
+                                Accepted: Cards (Visa, MasterCard, RuPay), UPI (GPay, PhonePe, Paytm), NetBanking (50+ Banks)
+                              </span>
                             </div>
                           </div>
+                          <ShieldCheck className="w-7 h-7 text-emerald-400 shrink-0" />
                         </div>
-                      )}
 
-                      {/* Escrow Details */}
-                      {paymentMethod === 'escrow' && (
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2 text-emerald-700 font-bold text-xs">
-                            <ShieldCheck className="w-4 h-4 text-emerald-600" /> CargoShare Smart Escrow Protection Guarantee
+                        {/* Milestone Payment Breakdown */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                          <div className="p-3.5 bg-white/10 rounded-2xl backdrop-blur-xs border border-white/10">
+                            <span className="text-[11px] text-slate-300 block font-medium">Stage 1: 25% Advance Slot Deposit</span>
+                            <span className="text-2xl font-black text-emerald-300">₹{amountToPayNow.toLocaleString()}</span>
+                            <span className="text-[10px] text-slate-300 block mt-1">Payable now via Razorpay to lock slot reservation</span>
                           </div>
-                          <p className="text-xs text-slate-600 leading-relaxed">
-                            Your payment of <strong>₹{grandTotal.toLocaleString()}</strong> is safely placed in an RBI-compliant Escrow Trustee Account. The carrier is only paid once your container gates into the origin port and customs EDI verification is validated.
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Bank Wire Details */}
-                      {paymentMethod === 'wire' && (
-                        <div className="space-y-3">
-                          <div className="bg-white p-3 rounded-xl border border-slate-200 text-xs space-y-1">
-                            <p className="font-bold text-slate-900">CargoShare Freight Escrow Beneficiary:</p>
-                            <p className="text-slate-600">Bank: <strong>HDFC Bank Ltd (Fort Branch, Mumbai)</strong></p>
-                            <p className="text-slate-600">Account No: <strong>50200084920194</strong> • IFSC: <strong>HDFC0000060</strong></p>
-                          </div>
-                          <div>
-                            <label className="text-xs font-bold text-slate-700 uppercase block mb-1">
-                              Bank Transaction / UTR Reference Number *
-                            </label>
-                            <input 
-                              type="text"
-                              value={wireUtr}
-                              onChange={(e) => setWireUtr(e.target.value)}
-                              placeholder="e.g. HDFC2026102488392"
-                              className="w-full px-4 py-2 bg-white rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
-                              required
-                            />
+                          <div className="p-3.5 bg-white/10 rounded-2xl backdrop-blur-xs border border-white/10">
+                            <span className="text-[11px] text-slate-300 block font-medium">Stage 2: 75% Remaining Freight</span>
+                            <span className="text-2xl font-black text-slate-200">₹{balanceAmount.toLocaleString()}</span>
+                            <span className="text-[10px] text-slate-300 block mt-1">Payable upon carrier approval & port terminal gate-in</span>
                           </div>
                         </div>
-                      )}
 
-                      {/* Advance Payment Details */}
-                      {paymentMethod === 'advance' && (
-                        <div className="space-y-2">
-                          <div className="flex justify-between items-center text-xs">
-                            <span className="text-slate-600">Immediate Slot Reservation (25%):</span>
-                            <span className="font-bold text-slate-900">₹{advanceAmount.toLocaleString()}</span>
-                          </div>
-                          <div className="flex justify-between items-center text-xs">
-                            <span className="text-slate-600">Remaining Balance (Payable at Port Gate-in):</span>
-                            <span className="font-bold text-slate-500">₹{balanceAmount.toLocaleString()}</span>
-                          </div>
+                        <div className="flex items-center justify-between text-[11px] text-slate-300 pt-2 border-t border-white/10 font-medium">
+                          <span>RBI-Compliant Escrow Trustee • 256-Bit SSL Encrypted</span>
+                          <span className="text-emerald-300 font-bold">Zero Transaction Surcharge</span>
                         </div>
-                      )}
-
+                      </div>
                     </div>
 
                     {/* Submit Bar */}
@@ -1030,19 +793,19 @@ export default function SearchSpace() {
                       <button 
                         type="submit" 
                         disabled={isProcessingPayment}
-                        className={`px-8 py-3 bg-brand-600 text-white rounded-xl font-bold shadow-lg transition-all flex items-center gap-2 text-sm ${
-                          isProcessingPayment ? 'opacity-70 cursor-not-allowed' : 'hover:bg-brand-700 hover:-translate-y-0.5'
+                        className={`px-8 py-3.5 bg-gradient-to-r from-[#0284c7] via-[#0369a1] to-[#0c2340] hover:from-[#0369a1] hover:to-[#0284c7] text-white rounded-2xl font-extrabold shadow-lg hover:shadow-xl transition-all flex items-center gap-2 text-sm cursor-pointer ${
+                          isProcessingPayment ? 'opacity-70 cursor-not-allowed' : 'hover:-translate-y-0.5'
                         }`}
                       >
                         {isProcessingPayment ? (
                           <>
                             <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                            Processing Payment...
+                            Connecting to Razorpay...
                           </>
                         ) : (
                           <>
-                            <Lock className="w-4 h-4" />
-                            Pay ₹{amountToPayNow.toLocaleString()} & Lock Slot
+                            <Lock className="w-4 h-4 text-blue-200" />
+                            Pay ₹{amountToPayNow.toLocaleString()} via Razorpay
                           </>
                         )}
                       </button>
@@ -1124,7 +887,7 @@ export default function SearchSpace() {
         </div>
       )}
 
-      {/* Fullscreen UPI Payment Scanner Modal */}
+      {/* Fullscreen Razorpay Standard Checkout Modal */}
       {isScannerModalOpen && (
         <PaymentScannerModal
           isOpen={isScannerModalOpen}
