@@ -102,6 +102,33 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
+  const registerWithRazorpay = async (payload) => {
+    let res;
+    try {
+      res = await fetch(`${API_BASE}/api/auth/demo-razorpay`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+    } catch (networkErr) {
+      throw new Error(`Unable to connect to backend server at ${API_BASE}.`);
+    }
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.message || 'Razorpay demo registration failed');
+    }
+
+    if (data.token && data.user) {
+      setToken(data.token);
+      setUser(data.user);
+      localStorage.setItem('cargoshare_token', data.token);
+      localStorage.setItem('cargoshare_user', JSON.stringify(data.user));
+    }
+
+    return data;
+  };
+
   const logout = () => {
     setToken(null);
     setUser(null);
@@ -140,6 +167,7 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated: !!token && !!user,
         login,
         register,
+        registerWithRazorpay,
         logout,
         refreshProfile,
         updateProfile,

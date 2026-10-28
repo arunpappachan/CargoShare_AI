@@ -108,4 +108,54 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// 3. INSTANT DEMO ACCOUNT VIA RAZORPAY QR SCAN
+router.post('/demo-razorpay', async (req, res) => {
+  try {
+    const { role = 'exporter', paymentId } = req.body;
+    const validRoles = ['exporter', 'carrier'];
+    const assignedRole = validRoles.includes(role) ? role : 'exporter';
+
+    const timestamp = Date.now().toString().slice(-4);
+    const demoEmail = `demo.${assignedRole}.${timestamp}@cargoshare.ai`;
+    const demoName = assignedRole === 'carrier' ? `Demo Carrier (${timestamp})` : `Demo Exporter (${timestamp})`;
+    const demoCompany = assignedRole === 'carrier' ? 'Oceanic Freight Logistics Ltd.' : 'Apex International Textiles SME';
+    const demoPhone = '9876543210';
+    const defaultPassword = 'demoPassword123!';
+    const hashedPassword = await bcrypt.hash(defaultPassword, 10);
+
+    const newUser = new User({
+      name: demoName,
+      email: demoEmail,
+      password: hashedPassword,
+      role: assignedRole,
+      companyName: demoCompany,
+      phone: demoPhone,
+      region: 'apac',
+    });
+
+    await newUser.save();
+
+    const token = jwt.sign({ id: newUser._id, role: newUser.role }, JWT_SECRET, { expiresIn: '7d' });
+
+    res.status(201).json({
+      status: 'success',
+      message: 'Demo account activated & verified successfully via Razorpay QR!',
+      token,
+      paymentId: paymentId || `pay_RzpDemo${Math.floor(100000 + Math.random() * 900000)}`,
+      user: {
+        id: newUser._id,
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role,
+        companyName: newUser.companyName,
+        phone: newUser.phone,
+        region: newUser.region,
+      },
+    });
+  } catch (error) {
+    console.error('Demo Razorpay Auth Error:', error);
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+});
+
 module.exports = router;

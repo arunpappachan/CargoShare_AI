@@ -1,5 +1,5 @@
 import pandas as pd
-import numpy as np
+
 
 def predict_freight_rate(features):
     """
