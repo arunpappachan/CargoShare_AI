@@ -746,7 +746,7 @@ export default function SearchSpace() {
                               0% Fee
                             </span>
                           </div>
-                          <p className="text-[11px] text-slate-500">Google Pay, PhonePe, Paytm, BHIM</p>
+                          <p className="text-[11px] text-slate-500">Razorpay Gateway (Cards, UPI, NetBanking)</p>
                         </div>
 
                         {/* Option 2: Cards */}
@@ -894,9 +894,9 @@ export default function SearchSpace() {
                                 <div className="bg-white p-1.5 rounded-xl w-full h-full flex items-center justify-center z-10 shadow-inner">
                                   <img 
                                     src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=4&data=${encodeURIComponent(
-                                      `upi://pay?pa=cargoshare.escrow@hdfcbank&pn=CargoShare%20AI&am=${amountToPayNow}&cu=INR&tn=Slot%20Booking%20${bookingModal.id}`
+                                      `upi://pay?pa=cargoshare.freight@razorpay&pn=CargoShare%20AI&am=${amountToPayNow}&cu=INR&tn=Slot%20Booking%20${bookingModal.id}`
                                     )}`}
-                                    alt="UPI QR Code"
+                                    alt="Razorpay QR Code"
                                     className="w-full h-full object-contain select-none"
                                     onError={(e) => {
                                       e.target.style.display = 'none';
@@ -905,39 +905,36 @@ export default function SearchSpace() {
                                   />
                                   <div style={{ display: 'none' }} className="w-full h-full flex-col items-center justify-center bg-slate-50 text-slate-800">
                                     <QrCode className="w-24 h-24 text-slate-800" />
-                                    <span className="text-[9px] font-bold text-slate-500 mt-1">cargoshare.escrow@hdfcbank</span>
+                                    <span className="text-[9px] font-bold text-slate-500 mt-1">cargoshare.freight@razorpay</span>
                                   </div>
                                 </div>
 
                                 <div className="absolute bottom-1 z-20 bg-slate-900/90 px-2 py-0.5 rounded-full text-[8px] font-bold text-emerald-300 border border-emerald-500/20">
-                                  SCAN WITH ANY UPI APP
+                                  RAZORPAY GATEWAY QR
                                 </div>
                               </div>
 
-                              {/* Helper Text and Apps */}
+                              {/* Razorpay Trust Badge (Replaces app pills) */}
                               <div className="text-center space-y-1">
                                 <p className="text-xs text-slate-700 font-bold">
-                                  Scan to pay <span className="text-emerald-600 font-black">₹{amountToPayNow.toLocaleString()}</span> directly from your phone
+                                  Direct Settlement: <span className="text-emerald-600 font-black">₹{amountToPayNow.toLocaleString()}</span>
                                 </p>
-                                <div className="flex flex-wrap justify-center items-center gap-1.5 pt-1">
-                                  {['GPay', 'PhonePe', 'Paytm', 'BHIM', 'CRED'].map(app => (
-                                    <span key={app} className="px-2 py-0.5 bg-slate-100 rounded text-[11px] font-semibold text-slate-600 border border-slate-200">
-                                      {app}
-                                    </span>
-                                  ))}
+                                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-[#0284c7] border border-blue-200 rounded-full text-[11px] font-bold">
+                                  <ShieldCheck className="w-3.5 h-3.5" />
+                                  <span>Razorpay Standard Checkout • PCI-DSS Certified</span>
                                 </div>
                               </div>
 
-                              {/* Copy VPA & Quick Verification Buttons */}
+                              {/* Copy VPA */}
                               <div className="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-xs">
                                 <div className="flex items-center gap-1.5">
-                                  <Smartphone className="w-3.5 h-3.5 text-brand-600" />
-                                  <span className="font-mono text-slate-700 font-semibold text-[11px]">cargoshare.escrow@hdfcbank</span>
+                                  <Smartphone className="w-3.5 h-3.5 text-[#0284c7]" />
+                                  <span className="font-mono text-slate-700 font-semibold text-[11px]">cargoshare.freight@razorpay</span>
                                 </div>
                                 <button
                                   type="button"
                                   onClick={() => {
-                                    navigator.clipboard.writeText('cargoshare.escrow@hdfcbank');
+                                    navigator.clipboard.writeText('cargoshare.freight@razorpay');
                                     setCopiedVpa(true);
                                     setTimeout(() => setCopiedVpa(false), 2000);
                                   }}
