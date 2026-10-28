@@ -1,16 +1,14 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Ship, Mail, Lock, Building, Briefcase, ChevronRight, User, Globe, Eye, EyeOff, Phone, AlertCircle, Scan, Sparkles } from 'lucide-react';
+import { Ship, Mail, Lock, Building, Briefcase, ChevronRight, User, Globe, Eye, EyeOff, Phone, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import RazorpayDemoModal from '../components/RazorpayDemoModal';
 
 export default function Register() {
   const [role, setRole] = useState('exporter'); // 'exporter' or 'carrier'
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  const [showRazorpayModal, setShowRazorpayModal] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -92,44 +90,7 @@ export default function Register() {
             </div>
           )}
 
-          {/* Razorpay Instant Demo Activation Trigger */}
-          <div className="mb-6">
-            <button
-              type="button"
-              onClick={() => setShowRazorpayModal(true)}
-              className="w-full p-3.5 bg-gradient-to-r from-[#0c2340] to-[#13335c] hover:from-[#13335c] hover:to-[#1e4a7a] text-white rounded-2xl font-bold shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-between border border-blue-900/50 group cursor-pointer"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[#0284c7] flex items-center justify-center font-black text-sm text-white shadow-inner">
-                  R
-                </div>
-                <div className="text-left">
-                  <div className="flex items-center gap-1.5 leading-none">
-                    <span className="text-xs font-black tracking-tight text-white">Razorpay Instant Demo</span>
-                    <span className="text-[9px] bg-emerald-500/20 text-emerald-300 font-extrabold px-1.5 py-0.5 rounded uppercase border border-emerald-500/30">
-                      Scan QR
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-slate-300 mt-1 leading-none">Scan QR to create & activate demo account</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-1.5 text-xs text-blue-200 group-hover:translate-x-0.5 transition-transform">
-                <Scan className="w-4 h-4 text-emerald-400 animate-pulse" />
-                <span className="hidden sm:inline font-semibold">Open QR</span>
-              </div>
-            </button>
 
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-200"></div>
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-3 text-slate-400 font-semibold tracking-wider">
-                  Or register manually
-                </span>
-              </div>
-            </div>
-          </div>
 
           <form className="space-y-4" onSubmit={handleSubmit}>
             
@@ -327,11 +288,6 @@ export default function Register() {
         </div>
       </div>
       
-      {/* Razorpay Demo Account Modal */}
-      <RazorpayDemoModal 
-        isOpen={showRazorpayModal} 
-        onClose={() => setShowRazorpayModal(false)} 
-      />
     </div>
   );
 }
